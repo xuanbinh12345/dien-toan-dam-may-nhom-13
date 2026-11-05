@@ -1,18 +1,18 @@
-# Nhóm 13 | PostgreSQL sẵn sàng cao và phục hồi đến thời điểm
+# Nhóm 13 | Thiết kế cơ sở dữ liệu quan hệ sẵn sàng cao với sao lưu phục hồi đến thời điểm
 
-**Môn học:** Điện toán đám mây · **Trưởng nhóm:** Lê Xuân Bình
+**Môn học:** Điện toán đám mây 
 
 Nhóm nghiên cứu cách phối hợp replication và backup để vừa giảm thời gian gián đoạn khi máy chủ chính dừng, vừa lấy lại dữ liệu khi người dùng xóa nhầm. Nhóm sẽ kiểm chứng bằng hai thí nghiệm trên dữ liệu đơn hàng giả lập.
 
-**Thành viên mới:** Mở [3 Issue phân công](https://github.com/xuanbinh12345/dien-toan-dam-may-nhom-13/issues), tìm vai trò của mình trong bảng dưới, rồi làm theo mục **Bắt đầu trên máy cá nhân**. Mỗi người phụ trách một mảng kỹ thuật. Trưởng nhóm nhận một trong ba mảng và phụ trách thêm việc ghép bài.
+Mở [3 Issue phân công](https://github.com/xuanbinh12345/dien-toan-dam-may-nhom-13/issues), tìm vai trò của mình trong bảng dưới, rồi làm theo mục **Bắt đầu trên máy cá nhân**. Mỗi người phụ trách một mảng kỹ thuật. Trưởng nhóm nhận một trong ba mảng và phụ trách thêm việc ghép bài.
 
 ## 1. Ai làm gì và bàn giao cho ai?
 
 | Vai trò | Người nhận | Công việc và sản phẩm đầu tiên | Khi ghép bài |
 |---|---|---|---|
-| TV1 · Hạ tầng | [Điền tên] | Chốt phiên bản PostgreSQL, báo vào Issue. Dựng primary và replica bằng Docker Compose. Bàn giao cấu hình, cách khởi động và kết quả truy vấn cùng một mã đơn trên hai máy chủ trong `infra/`. | Cung cấp địa chỉ kết nối cho TV2, TV3. Đo độ trễ sao chép cùng TV3. Viết và chạy quy trình dừng primary, cô lập máy cũ, nâng replica thành primary mới rồi chuyển kết nối ứng dụng. |
-| TV2 · Sao lưu và phục hồi | [Điền tên] | Dùng PostgreSQL riêng để thử sao lưu toàn phần và lưu trữ WAL (nhật ký ghi trước). Bàn giao lệnh backup, cách kiểm tra WAL và hướng dẫn khôi phục vào một môi trường riêng trong `backup/`. | Áp dụng cấu hình lên môi trường chung với TV1. Phục hồi đến mốc ngay trước khi xóa đơn hàng. Giao địa chỉ máy đã phục hồi cho TV3 kiểm tra. |
-| TV3 · Dữ liệu và kiểm thử | [Điền tên] | Đưa `tests/schema.sql` lên trước để hai bạn dùng chung. Viết script tạo tải đọc/ghi, ghi nhận kết quả từng giao dịch ra CSV và hướng dẫn chạy trong `tests/`. | Giữ log phía ứng dụng, đo thời gian gián đoạn, tìm giao dịch thiếu, kiểm tra dữ liệu sau phục hồi và tạo lại bảng/biểu đồ từ số liệu thô. |
+| TV1 · Hạ tầng | [ tên] | Chốt phiên bản PostgreSQL, báo vào Issue. Dựng primary và replica bằng Docker Compose. Bàn giao cấu hình, cách khởi động và kết quả truy vấn cùng một mã đơn trên hai máy chủ trong `infra/`. | Cung cấp địa chỉ kết nối cho TV2, TV3. Đo độ trễ sao chép cùng TV3. Viết và chạy quy trình dừng primary, cô lập máy cũ, nâng replica thành primary mới rồi chuyển kết nối ứng dụng. |
+| TV2 · Sao lưu và phục hồi | [ tên] | Dùng PostgreSQL riêng để thử sao lưu toàn phần và lưu trữ WAL (nhật ký ghi trước). Bàn giao lệnh backup, cách kiểm tra WAL và hướng dẫn khôi phục vào một môi trường riêng trong `backup/`. | Áp dụng cấu hình lên môi trường chung với TV1. Phục hồi đến mốc ngay trước khi xóa đơn hàng. Giao địa chỉ máy đã phục hồi cho TV3 kiểm tra. |
+| TV3 · Dữ liệu và kiểm thử | [ tên] | Đưa `tests/schema.sql` lên trước để hai bạn dùng chung. Viết script tạo tải đọc/ghi, ghi nhận kết quả từng giao dịch ra CSV và hướng dẫn chạy trong `tests/`. | Giữ log phía ứng dụng, đo thời gian gián đoạn, tìm giao dịch thiếu, kiểm tra dữ liệu sau phục hồi và tạo lại bảng/biểu đồ từ số liệu thô. |
 
 **Việc của leader trong buổi đầu:** điền ba tên ở bảng trên, ghi hạn bàn giao vào từng Issue và chốt lịch ghép bài. Trước buổi đo, cả nhóm ghi mục tiêu RPO/RTO cho từng kịch bản và lý do chọn ngưỡng. RPO thể hiện khoảng mất dữ liệu có thể chấp nhận, RTO thể hiện thời gian gián đoạn có thể chấp nhận.
 
