@@ -40,5 +40,6 @@ Cơ chế replication và backup cần phối hợp ra sao để vừa giảm gi
 
 1. Bài giảng Chương 3.
 2. Bài giảng Chương 4.
-3. [NIST SP 800-34 Rev. 1](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-34r1.pdf) – *Contingency Planning Guide for Federal Information Systems*.
+3. [NIST SP 800-34 Rev. 1](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-34r1.pdf) – *Contingency Planning Guide for
+Federal Information Systems*.
 4. [PostgreSQL Documentation](https://www.postgresql.org/docs/).
