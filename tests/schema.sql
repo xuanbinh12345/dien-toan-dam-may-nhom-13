@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS public.orders (
+    order_id   TEXT PRIMARY KEY,
+    amount     NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
