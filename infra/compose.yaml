@@ -1,0 +1,55 @@
+services:
+  primary:
+    image: postgres:16
+    container_name: lab13-primary
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Hay dat POSTGRES_PASSWORD}
+      POSTGRES_DB: ha_lab
+    command:
+      - postgres
+      - -c
+      - wal_level=replica
+      - -c
+      - max_wal_senders=5
+      - -c
+      - archive_mode=on
+      - -c
+      - archive_timeout=30s
+      - -c
+      - archive_command=test -f /wal_archive/%f || cp %p /wal_archive/%f
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - primary_data:/var/lib/postgresql/data
+      - wal_archive:/wal_archive
+
+  replica:
+    image: postgres:16
+    container_name: lab13-replica
+    depends_on:
+      - primary
+    environment:
+      PGPASSWORD: ${REPLICATION_PASSWORD:?Hay dat REPLICATION_PASSWORD}
+      PGDATA: /var/lib/postgresql/data
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        until pg_isready -h primary -U postgres -d ha_lab; do
+          sleep 2
+        done
+        if [ ! -s "$$PGDATA/PG_VERSION" ]; then
+          pg_basebackup -h primary -D "$$PGDATA" -U replicator -Fp -Xs -P -R
+        fi
+        exec docker-entrypoint.sh postgres
+    ports:
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - replica_data:/var/lib/postgresql/data
+
+volumes:
+  primary_data:
+  replica_data:
+  wal_archive:
+    external: true
+    name: infra_wal_archive
