@@ -1,0 +1,2 @@
+﻿"run_id","checked_utc","attempted_total","ack_old_primary","ack_new_primary","ack_total","ack_present","ack_missing","old_primary_ack_missing","unconfirmed_total","unconfirmed_present","unconfirmed_absent","database_rows_for_this_run"
+"FO-20261117-151645-24e67c","2026-11-17T16:01:41.7850868Z","511","20","490","510","510","0","0","1","0","1","510"
