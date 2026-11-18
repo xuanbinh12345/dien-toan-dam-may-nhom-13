@@ -1,5 +1,12 @@
 # Kết quả thực nghiệm – Nhóm 13
 
+## Kiểm thử ứng dụng sau PITR từ bản sao ổ D
+
+Run [APP-PITR-20261118-184031-d5a9f5](APP-PITR-20261118-184031-d5a9f5.json):
+ứng dụng lab HTTP kiểm tra recovery state, ghi và đọc lại một đơn thành
+công (`PASS`). Ứng dụng truy cập database bằng Docker CLI/psql; xem
+[cách chạy và giới hạn](../tests/APP_PITR_README.md).
+
 ## Phục hồi từ bản sao trên ổ D
 
 [Lần thử ngày 19/11/2026](HOST-COPY-PITR-20261119.md): base backup
