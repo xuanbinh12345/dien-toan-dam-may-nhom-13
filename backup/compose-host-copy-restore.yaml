@@ -1,0 +1,19 @@
+# Dùng với compose-restore.yaml và project restore riêng.
+# Hai thư mục nguồn trên host chỉ đọc; restore_data là volume mới của project.
+services:
+  prepare:
+    volumes: !override
+      - type: bind
+        source: ${HOST_BACKUPS:?Set HOST_BACKUPS}
+        target: /backups
+        read_only: true
+      - restore_data:/restore_data
+  restore:
+    ports: !override
+      - "127.0.0.1:5595:5432"
+    volumes: !override
+      - restore_data:/var/lib/postgresql/data
+      - type: bind
+        source: ${HOST_WAL_ARCHIVE:?Set HOST_WAL_ARCHIVE}
+        target: /wal_archive
+        read_only: true

@@ -2,7 +2,12 @@
 
 ## Hiện trạng
 
-Backup/WAL nằm trong Docker named volume trên cùng máy với database. Cổng chỉ bind localhost; mount vào môi trường restore là chỉ đọc. Đây chưa phải bảo vệ khỏi hỏng ổ đĩa/mất máy, và chưa có kiểm chứng mã hóa, lưu ngoài host hay lịch backup tự động.
+Backup/WAL nguồn nằm trong Docker named volume trên cùng máy với database.
+Nhóm đã [thử sao chép và PITR từ bản sao trên ổ D](../results/HOST-COPY-PITR-20261119.md):
+backup được verify, bốn WAL segment được so hash, dữ liệu phục hồi khớp
+và đọc/ghi thành công. Bản sao này vẫn trên cùng host. Cổng chỉ bind
+localhost; mount backup/WAL vào môi trường restore là chỉ đọc. Chưa kiểm
+chứng mã hóa, lưu ngoài host hay lịch backup tự động.
 
 ## Phương án cần nhóm thống nhất
 
