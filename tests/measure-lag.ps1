@@ -1,5 +1,10 @@
 param(
-    [int]$DurationSeconds = 600
+    [ValidateRange(1, 86400)]
+    [int]$DurationSeconds = 600,
+    [ValidateNotNullOrEmpty()]
+    [string]$PrimaryContainer = "lab13-isolated-primary-1",
+    [ValidateRange(100, 60000)]
+    [int]$SampleIntervalMilliseconds = 2000
 )
 
 $ErrorActionPreference = "Stop"
@@ -13,10 +18,7 @@ $timer = [Diagnostics.Stopwatch]::StartNew()
 
 $sql = @"
 SELECT
-    to_char(
-        clock_timestamp() AT TIME ZONE 'UTC',
-        'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'
-    ) AS sampled_utc,
+    (clock_timestamp() AT TIME ZONE 'UTC')::text || '+00' AS sampled_utc,
     r.application_name,
     r.state,
     r.sync_state,
@@ -31,9 +33,10 @@ LEFT JOIN pg_stat_replication AS r ON true;
 "@
 
 Write-Host "CSV: $csvPath"
+Write-Host "Primary: $PrimaryContainer | Sample interval: $SampleIntervalMilliseconds ms"
 
 while ($timer.Elapsed.TotalSeconds -lt $DurationSeconds) {
-    $output = & docker exec lab13-isolated-primary-1 `
+    $output = & docker exec $PrimaryContainer `
         psql -X --csv -U postgres -d ha_lab `
         -v ON_ERROR_STOP=1 -c $sql 2>&1
 
@@ -64,7 +67,7 @@ while ($timer.Elapsed.TotalSeconds -lt $DurationSeconds) {
         )
     }
 
-    Start-Sleep -Seconds 2
+    Start-Sleep -Milliseconds $SampleIntervalMilliseconds
 }
 
 Write-Host "DONE. CSV: $csvPath"

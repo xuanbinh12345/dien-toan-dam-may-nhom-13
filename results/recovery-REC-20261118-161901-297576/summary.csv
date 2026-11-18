@@ -1,0 +1,2 @@
+﻿"run_id","old_primary","promoted_primary","expected_ack_ids","ack_ids_present","ack_ids_missing","post_failover_order_id","write_confirmed_utc","read_confirmed_utc","observed_rto_seconds","target_rto_seconds","target_rto_met"
+"REC-20261118-161901-297576","lab13-repeat-primary-1","lab13-repeat-replica-1","1132","1132","0","REC-20261118-161901-297576-POST-001","2026-11-18T16:19:02.4525896+00:00","2026-11-18T16:19:02.6093895+00:00","1.078","30","True"

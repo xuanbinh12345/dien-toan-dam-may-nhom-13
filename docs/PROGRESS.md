@@ -22,6 +22,7 @@ Kết quả lần thử kết hợp replication và PITR được ghi tại
 | Schema | Tạo bảng orders, khóa chính order_id và ràng buộc amount > 0 |
 | Tải bình thường | 444 giao dịch ACK; 444 lần đọc thấy đơn hàng trên replica |
 | Đo replication | Đã lưu CSV và biểu đồ; trong khoảng có tải có 258 mẫu, mean 1,326 ms, p95 1,797 ms, max 10,411 ms; WAL gap max 232 byte |
+| Đo lặp replication | Cụm lab13-repeat: 3 mức nghỉ, mỗi mức 2 lượt; 1132/1132 ACK và 1132/1132 lần đọc thấy đơn; lưu CSV, manifest và bảng tổng hợp |
 | Failover | Dừng primary bằng script, promote replica và chuyển đích ghi |
 | Đối chiếu sau failover | 510/510 giao dịch ACK có trên primary mới; 1 UNCONFIRMED không có trong dữ liệu đối chiếu |
 | Base backup | Tạo bản sao vật lý, kiểm tra pg_verifybackup thành công |
@@ -31,6 +32,7 @@ Kết quả lần thử kết hợp replication và PITR được ghi tại
 | Kiểm tra PITR | Số dòng trước và sau khôi phục đều là 4; checksum khớp |
 | Đọc/ghi sau PITR | Kết thúc recovery, ghi đơn hàng mới thành công và đọc lại được |
 | Tái lập dự phòng sau failover | Trên lab13-bootstrap-check: dừng primary cũ, promote replica, tạo replica mới từ volume rỗng; primary mới thấy streaming/async và replica mới đọc được đơn REJOIN-20261118-001 trị giá 456.78 |
+| Đo phục hồi database có kiểm soát | Trên lab13-repeat: từ yêu cầu dừng đến ghi và đọc lại thành công trên primary mới 1,078 giây, dưới mục tiêu thử nghiệm 30 giây; 1132/1132 ID ACK có mặt |
 
 ## Kết quả failover
 
@@ -46,6 +48,20 @@ Run ID: FO-20261117-151645-24e67c.
 Đây là phép thử chuyển đổi do người vận hành kích hoạt.
 Không coi 1 giao dịch UNCONFIRMED là giao dịch ACK bị mất.
 Kết quả một lần thử không chứng minh replication bất đồng bộ luôn có RPO bằng 0.
+
+## Đo lặp và phục hồi bổ sung ngày 18/11/2026
+
+Trên `lab13-repeat`, sáu lượt đo lag ở ba mức nghỉ đã được lưu cùng
+[bảng số liệu và phương pháp](../results/repeat-lag-20261118/README.md).
+Sau đó nhóm ghi [kế hoạch đo phục hồi](RECOVERY_MEASUREMENT_PLAN.md)
+trước khi dừng primary. Run `REC-20261118-161901-297576` ghi nhận
+1,078 giây từ yêu cầu dừng đến ghi và đọc lại thành công trên primary
+đã promote; đối chiếu 1132/1132 mã ACK trước đó trên primary mới.
+[CSV sự kiện và giới hạn](../results/recovery-REC-20261118-161901-297576/README.md).
+
+1132 mã đã có trên replica trước khi dừng; phép đối chiếu này không đo
+RPO tại thời điểm có giao dịch đang ghi. Thời gian đo chưa gồm tự động
+phát hiện lỗi hoặc chuyển endpoint ứng dụng.
 
 ## Kết quả backup và PITR
 
@@ -107,16 +123,17 @@ Không dùng volume dữ liệu nguồn làm đích khôi phục.
 
 ## Công việc còn lại
 
-1. Đo thêm nhiều lần và ở các mức tải khác nhau để đánh giá độ biến động của replication lag; xác định mục tiêu trước khi chạy.
-2. Rà soát README và cập nhật sơ đồ theo kiến trúc, kết quả thực tế.
-3. Xác định mục tiêu RPO/RTO trước các lần đo bổ sung, đo đầy đủ thời gian phục hồi dịch vụ.
-4. Hoàn thiện chính sách retention, bản sao ngoài máy và bảo mật. Phân biệt rõ đề xuất với cơ chế đã triển khai, kiểm thử.
-5. Hoàn thiện báo cáo, slide và video/demo.
+1. Rà soát README và cập nhật sơ đồ theo kiến trúc, kết quả thực tế.
+2. Đo RPO tại biên sự cố với tải đang chạy; đánh giá nhiều lần failover,
+   thời gian phát hiện lỗi và chuyển endpoint ứng dụng nếu muốn đưa ra
+   mục tiêu RPO/RTO rộng hơn phép thử có kiểm soát.
+3. Hoàn thiện chính sách retention, bản sao ngoài máy và bảo mật. Phân biệt rõ đề xuất với cơ chế đã triển khai, kiểm thử.
+4. Hoàn thiện báo cáo, slide và video/demo.
 
 ## Giới hạn hiện tại
 
 - Các container chạy trên cùng một Docker host.
 - Failover chưa có cơ chế tự động phát hiện sự cố.
-- Chưa đánh giá sự cố toàn host, tải cao hoặc nhiều lần thử lặp lại.
+- Chưa đánh giá sự cố toàn host, nhiều client đồng thời hoặc nhiều lần failover.
 - Đối chiếu failover dựa trên ID giao dịch; PITR có kiểm tra số dòng và checksum.
 - Đã có ảnh log PITR, chưa lưu log restore dạng văn bản riêng.

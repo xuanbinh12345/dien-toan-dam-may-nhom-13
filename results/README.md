@@ -1,5 +1,16 @@
 # Kết quả thực nghiệm – Nhóm 13
 
+## Đo lặp ngày 18/11/2026 — lab13-repeat
+
+[Bảng sáu lượt đo, phương pháp và giới hạn](repeat-lag-20261118/README.md)
+gồm ba mức khoảng nghỉ (1500, 750, 0 ms), mỗi mức lặp hai lần trên cụm
+riêng. CSV gốc của từng lượt và script tính lại đều được lưu trong repo.
+
+Sau đó [đo failover có kiểm soát trên cụm thử](recovery-REC-20261118-161901-297576/README.md):
+từ yêu cầu dừng primary đến ghi và đọc lại được trên primary mới là
+1,078 giây; 1132/1132 đơn đã ACK trước đó còn hiện diện. Phép thử này
+không đo RPO tại biên sự cố hoặc thời gian phát hiện lỗi của ứng dụng.
+
 ## Lần thử ngày 17/11/2026 — lab13-isolated
 
 | Dữ liệu | File | Kết quả / cách đọc |

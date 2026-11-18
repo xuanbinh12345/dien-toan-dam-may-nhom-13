@@ -1,0 +1,7 @@
+level_interval_ms,repeat,workload_csv,lag_csv,timestamp_hour_fix
+1500,1,results/workload-LOAD-20261118-151102.csv,results/replication-lag-20261118-151049.csv,15
+1500,2,results/workload-LOAD-20261118-151704.csv,results/replication-lag-20261118-151652.csv,
+750,1,results/workload-LOAD-20261118-152051.csv,results/replication-lag-20261118-152043.csv,
+750,2,results/workload-LOAD-20261118-155105.csv,results/replication-lag-20261118-155058.csv,
+0,1,results/workload-LOAD-20261118-155523.csv,results/replication-lag-20261118-155511.csv,
+0,2,results/workload-LOAD-20261118-160030.csv,results/replication-lag-20261118-160024.csv,

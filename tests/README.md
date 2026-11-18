@@ -10,6 +10,8 @@
 | [failover-workload.ps1](failover-workload.ps1) | Ghi liên tục theo `results/write-target.txt`; ACK/UNCONFIRMED; UTC và mã đơn riêng | Tạo file đích ghi phù hợp trước khi chạy |
 | [invoke-failover.ps1](invoke-failover.ps1) | Dừng primary, promote replica, đổi đích ghi; xuất mốc sự kiện | Chỉ chạy một lần trên cụm có vai trò ban đầu, tải đang hoạt động |
 | [verify-failover.ps1](verify-failover.ps1) | Đối chiếu ID ACK và UNCONFIRMED với primary mới | Tải đã DONE; database của đúng lần thử còn tồn tại |
+| [summarize-repeat-lag.ps1](summarize-repeat-lag.ps1) | Tính lại sáu lượt đo lag từ manifest và CSV gốc | Chỉ đọc CSV, ghi summary.csv |
+| [measure-repeat-recovery.ps1](measure-repeat-recovery.ps1) | Preflight chỉ đọc; với `-ExecuteFailover` dừng primary của `lab13-repeat`, promote replica, đo ghi/đọc và đối chiếu 1132 ID | Chỉ dùng một lần trên cụm thử còn đúng vai trò ban đầu |
 
 ## Chạy tải và đo lag trước failover
 
@@ -29,7 +31,19 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\measure-lag.ps1 
 
 CSV nằm trong `results/`, có timestamp/run ID trong tên. Giữ cả khoảng có tải và khoảng sau tải; phân tích chúng riêng. `replay_lag_ms` trống là NULL, không thay bằng 0. `write_ms` gồm chi phí gọi Docker/psql, không phải thời gian xử lý SQL thuần.
 
-**Không chạy hai script trên để đo như trước sau khi đã promote:** chúng cố định đích là container mang tên primary cũ. Theo [runbook failover](../infra/FAILOVER.md) để thử chuyển đổi; không tự sửa vai trò chỉ dựa vào tên container.
+Hai script mặc định dùng `lab13-isolated-primary-1` và
+`lab13-isolated-replica-1` để tương thích lần thử ban đầu. Với cụm thử
+mới, truyền `-PrimaryContainer` và `-ReplicaContainer` cho `workload.ps1`,
+và `-PrimaryContainer` cho `measure-lag.ps1`. Chỉ chạy khi primary thực sự
+không ở recovery, replica đang streaming; không dựa vào tên container để
+suy ra vai trò sau failover.
+
+`workload.ps1` nhận `-IntervalMilliseconds` (mặc định 1000); giảm khoảng
+nghỉ để tăng nhịp tải mục tiêu. `measure-lag.ps1` nhận
+`-SampleIntervalMilliseconds` (mặc định 2000). Nhịp ghi thực tế còn phụ
+thuộc thời gian gọi Docker/psql và phải tính từ CSV, không đồng nhất với
+giá trị khoảng nghỉ. Dùng project/volume mới cho các lần đo lặp, không
+khởi động lại primary cũ của lần failover đã lưu.
 
 ## Đối chiếu đúng run
 
@@ -47,8 +61,14 @@ Script xuất `comparison-details-*`, `comparison-summary-*` và `db-orders-*`. 
 - [x] CSV lag và log UTC của từng giao dịch.
 - [x] Failover: 2,316 giây đến ACK đầu tiên trên primary mới.
 - [x] 510/510 ACK còn trong dữ liệu; 1 UNCONFIRMED không hiện diện.
-- [ ] Tổng hợp lag trong khoảng có tải, biểu đồ và điều kiện đo.
-- [ ] Đo nhiều lần; thống nhất mục tiêu RPO/RTO trước phép thử tiếp theo.
-- [ ] Kiểm tra count/checksum và đọc/ghi sau PITR; đo thời gian restore.
+- [x] Tổng hợp lag trong khoảng có tải, biểu đồ và điều kiện đo.
+- [x] Đo lag nhiều lần, ba mức khoảng nghỉ, trên cụm riêng; xem [bảng sáu lượt](../results/repeat-lag-20261118/README.md).
+- [ ] Thống nhất mục tiêu RPO/RTO trước phép thử phục hồi tiếp theo.
+- [x] Kiểm tra count/checksum và đọc/ghi sau PITR.
+- [ ] Đo đầy đủ thời gian phục hồi dịch vụ qua nhiều lần thử.
+
+Lần thử [REC-20261118-161901-297576](../results/recovery-REC-20261118-161901-297576/README.md)
+đã đo 1,078 giây từ yêu cầu dừng đến ghi **và đọc lại** thành công trên
+primary mới. Chưa gồm phát hiện lỗi hoặc đổi endpoint ứng dụng.
 
 Xem [danh mục kết quả](../results/README.md). Các script hiện có là tải chức năng nhẹ dùng Docker CLI, chưa phải client kết nối qua endpoint HA hoặc bài benchmark hiệu năng tối đa.
