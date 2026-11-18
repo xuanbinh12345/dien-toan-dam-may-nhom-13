@@ -1,0 +1,2 @@
+﻿"run_id","stop_requested_utc","first_new_primary_ack","first_order_id","new_primary","observed_recovery_sec"
+"FO-20261117-151645-24e67c","2026-11-17T15:17:08.5583066Z","2026-11-17T15:17:10.8747392Z","FO-20261117-151645-24e67c-000022","lab13-isolated-replica-1","2.316"
