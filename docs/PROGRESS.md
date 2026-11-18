@@ -17,6 +17,7 @@ Các cập nhật hoàn thiện tiếp theo thực hiện trên nhánh codex/hoa
 | Phần | Kết quả |
 |---|---|
 | Hạ tầng | Dựng PostgreSQL primary–replica bằng Docker Compose; kiểm tra streaming replication bất đồng bộ |
+| Dựng mới từ volume rỗng | Cụm lab13-bootstrap-check dùng volume và cổng riêng; primary streaming/async, replica ở recovery và đọc được đơn BOOTSTRAP-20261118-001 vừa ghi trên primary |
 | Schema | Tạo bảng orders, khóa chính order_id và ràng buộc amount > 0 |
 | Tải bình thường | 444 giao dịch ACK; 444 lần đọc thấy đơn hàng trên replica |
 | Đo replication | Đã lưu CSV và biểu đồ; trong khoảng có tải có 258 mẫu, mean 1,326 ms, p95 1,797 ms, max 10,411 ms; WAL gap max 232 byte |
@@ -87,17 +88,16 @@ Không dùng volume dữ liệu nguồn làm đích khôi phục.
 ## Công việc còn lại
 
 1. Đo thêm nhiều lần và ở các mức tải khác nhau để đánh giá độ biến động của replication lag; xác định mục tiêu trước khi chạy.
-2. Cập nhật README chính, README kết quả và sơ đồ theo kết quả thực tế.
-3. Kiểm chứng dựng mới từ volume rỗng trong môi trường riêng.
-4. Thực hiện quy trình tái lập replica sau failover.
-5. Bổ sung thử nghiệm xóa dữ liệu được sao chép sang replica
+2. Rà soát README và cập nhật sơ đồ theo kiến trúc, kết quả thực tế.
+3. Thực hiện quy trình tái lập replica sau failover.
+4. Bổ sung thử nghiệm xóa dữ liệu được sao chép sang replica
    rồi phục hồi bằng backup/PITR của cùng hệ thống HA.
    Bài PITR hiện tại được thực hiện trên môi trường riêng.
-6. Xác định mục tiêu RPO/RTO trước các lần đo bổ sung,
+5. Xác định mục tiêu RPO/RTO trước các lần đo bổ sung,
    đo đầy đủ thời gian phục hồi dịch vụ.
-7. Hoàn thiện chính sách retention, bản sao ngoài máy và bảo mật.
+6. Hoàn thiện chính sách retention, bản sao ngoài máy và bảo mật.
    Phân biệt rõ đề xuất với cơ chế đã triển khai, kiểm thử.
-8. Hoàn thiện báo cáo, slide và video/demo.
+7. Hoàn thiện báo cáo, slide và video/demo.
 
 ## Giới hạn hiện tại
 
