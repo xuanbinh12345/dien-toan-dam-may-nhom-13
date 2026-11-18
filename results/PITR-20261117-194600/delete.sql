@@ -1,0 +1,7 @@
+﻿DELETE FROM public.orders
+WHERE order_id IN (
+    'PITR-20261117-194600-001',
+    'PITR-20261117-194600-002',
+    'PITR-20261117-194600-003'
+)
+RETURNING order_id, amount;

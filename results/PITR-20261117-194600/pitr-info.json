@@ -1,0 +1,11 @@
+﻿{
+    "run_id":  "PITR-20261117-194600",
+    "source_container":  "lab13-backup-source-1",
+    "backup_path":  "/backups/base_20261117_193933",
+    "recovery_target_utc":  "2026-11-17 19:46:55.579505+00",
+    "test_order_ids":  [
+                           "PITR-20261117-194600-001",
+                           "PITR-20261117-194600-002",
+                           "PITR-20261117-194600-003"
+                       ]
+}

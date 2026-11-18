@@ -1,0 +1,42 @@
+name: lab13-backup
+
+services:
+  source:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: ha_lab
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+
+    entrypoint:
+      - bash
+      - -ec
+      - |
+        mkdir -p /wal_archive /backups
+        chown postgres:postgres /wal_archive /backups
+        exec docker-entrypoint.sh postgres \
+          -c wal_level=replica \
+          -c archive_mode=on \
+          -c archive_timeout=30s \
+          -c "archive_command=if test -f /wal_archive/%f; then cmp -s %p /wal_archive/%f; else cp %p /wal_archive/%f; fi"
+
+    ports:
+      - "127.0.0.1:5545:5432"
+
+    volumes:
+      - source_data:/var/lib/postgresql/data
+      - wal_archive:/wal_archive
+      - base_backups:/backups
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -h 127.0.0.1 -U postgres -d ha_lab
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  source_data:
+  wal_archive:
+  base_backups:
