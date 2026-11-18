@@ -1,8 +1,23 @@
+param(
+    [ValidateNotNullOrEmpty()]
+    [string]$OldPrimary = "lab13-isolated-primary-1",
+    [ValidateNotNullOrEmpty()]
+    [string]$NewPrimary = "lab13-isolated-replica-1",
+    [ValidateNotNullOrEmpty()]
+    [string]$TargetFile = ".\results\write-target.txt",
+    [ValidatePattern('^FO-\d{8}-\d{6}-[a-f0-9]{6}$')]
+    [string]$RunId = ""
+)
+
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path $PSScriptRoot -Parent)
 
-$oldPrimary = "lab13-isolated-primary-1"
-$newPrimary = "lab13-isolated-replica-1"
+if ($OldPrimary -eq $NewPrimary) {
+    throw "OldPrimary and NewPrimary must be different containers."
+}
+
+$oldPrimary = $OldPrimary
+$newPrimary = $NewPrimary
 
 # Check roles before making changes.
 $oldRole = & docker exec $oldPrimary `
@@ -21,21 +36,28 @@ if ($LASTEXITCODE -ne 0 -or "$newRole".Trim() -ne "t") {
     throw "Replica is not in recovery. Stop and check."
 }
 
-$target = (Get-Content .\results\write-target.txt -Raw).Trim()
+$target = (Get-Content -LiteralPath $TargetFile -Raw).Trim()
 if ($target -ne $oldPrimary) {
-    throw "write-target.txt must point to the old primary."
+    throw "$TargetFile must point to the old primary."
 }
 
 # Bind this operation to the currently running workload.
-$runFile = Get-ChildItem .\results\failover-FO-*.csv |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 1
+if ($RunId) {
+    $runFile = Get-Item -LiteralPath ".\results\failover-$RunId.csv" -ErrorAction Stop
+} else {
+    $runFile = Get-ChildItem .\results\failover-FO-*.csv |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+}
 
 if ($null -eq $runFile) {
     throw "No workload CSV found."
 }
 
 $rows = @(Import-Csv -LiteralPath $runFile.FullName)
+if ($RunId -and @($rows | Where-Object { $_.run_id -ne $RunId }).Count -gt 0) {
+    throw "Workload CSV contains a different run ID."
+}
 
 $lastAck = $rows |
     Where-Object {
@@ -106,7 +128,7 @@ if ($LASTEXITCODE -ne 0 -or "$promoted".Trim() -ne "t") {
 
 Save-Event "promotion_confirmed"
 
-Set-Content -LiteralPath .\results\write-target.txt `
+Set-Content -LiteralPath $TargetFile `
     -Value $newPrimary -Encoding ASCII
 
 Save-Event "write_target_changed"

@@ -1,5 +1,12 @@
 # Kết quả thực nghiệm – Nhóm 13
 
+## Failover khi có tải — lab13-rpo
+
+[Run FO-20261118-165349-5aac44](RPO-FO-20261118-165349-5aac44.md):
+204/204 ACK hiện diện trên primary mới; một lượt UNCONFIRMED không hiện
+diện. Thời gian từ yêu cầu dừng đến ACK đầu tiên trên node mới là 1,333
+giây. Đây là một lần dừng có kiểm soát, không bảo đảm RPO luôn bằng 0.
+
 ## Đo lặp ngày 18/11/2026 — lab13-repeat
 
 [Bảng sáu lượt đo, phương pháp và giới hạn](repeat-lag-20261118/README.md)

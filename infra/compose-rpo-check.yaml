@@ -1,0 +1,10 @@
+# Dùng cùng infra/compose-isolated.yaml với project lab13-rpo.
+# Cổng riêng để giữ nguyên các cụm và volume của lần thử trước.
+services:
+  primary:
+    ports: !override
+      - "127.0.0.1:5583:5432"
+
+  replica:
+    ports: !override
+      - "127.0.0.1:5584:5432"

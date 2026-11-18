@@ -3,7 +3,16 @@ param(
     [int]$DurationSeconds = 600,
 
     [ValidateRange(100, 60000)]
-    [int]$IntervalMs = 1000
+    [int]$IntervalMs = 1000,
+
+    [ValidateNotNullOrEmpty()]
+    [string]$OldPrimary = "lab13-isolated-primary-1",
+
+    [ValidateNotNullOrEmpty()]
+    [string]$NewPrimary = "lab13-isolated-replica-1",
+
+    [ValidateNotNullOrEmpty()]
+    [string]$TargetFile = ".\results\write-target.txt"
 )
 
 $ErrorActionPreference = "Stop"
@@ -12,15 +21,19 @@ Set-Location (Split-Path $PSScriptRoot -Parent)
 Get-Command docker -ErrorAction Stop | Out-Null
 New-Item -ItemType Directory -Force -Path ".\results" | Out-Null
 
-$targetFile = ".\results\write-target.txt"
+if ($OldPrimary -eq $NewPrimary) {
+    throw "OldPrimary and NewPrimary must be different containers."
+}
+
+$targetFile = $TargetFile
 
 if (-not (Test-Path -LiteralPath $targetFile)) {
-    throw "Missing results/write-target.txt"
+    throw "Missing target file: $targetFile"
 }
 
 $allowedTargets = @(
-    "lab13-isolated-primary-1",
-    "lab13-isolated-replica-1"
+    $OldPrimary,
+    $NewPrimary
 )
 
 $initialTarget = (Get-Content -LiteralPath $targetFile -Raw).Trim()
