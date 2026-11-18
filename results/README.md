@@ -5,7 +5,7 @@
 | Dữ liệu | File | Kết quả / cách đọc |
 |---|---|---|
 | Tải bình thường | [workload-LOAD-20261117-141855.csv](workload-LOAD-20261117-141855.csv) | 444 ACK và 444 lần đọc thấy đơn |
-| Đo lag | [replication-lag-20261117-141920.csv](replication-lag-20261117-141920.csv) | Số liệu thô; có cả mẫu sau khi tải kết thúc, chưa tổng hợp thống kê |
+| Đo lag | [CSV gốc](replication-lag-20261117-141920.csv), [thống kê](lag-summary-LOAD-20261117-141855.csv), [biểu đồ](lag-chart-LOAD-20261117-141855.svg) | Trong khoảng có tải: 258 mẫu, trung bình 1,326 ms, p95 1,797 ms, lớn nhất 10,411 ms |
 | Kiểm tra script 30 giây | [failover-FO-20261117-150424-e2388e.csv](failover-FO-20261117-150424-e2388e.csv) | 26 ACK; chưa dừng primary trong lần này |
 | Tải failover chính thức | [failover-FO-20261117-151645-24e67c.csv](failover-FO-20261117-151645-24e67c.csv) | 511 lượt ghi, 510 ACK, 1 UNCONFIRMED |
 | Mốc điều khiển | [events-FO-20261117-151645-24e67c.csv](events-FO-20261117-151645-24e67c.csv) | stop_requested, primary_stopped, promotion_requested/confirmed, write_target_changed |
@@ -14,6 +14,22 @@
 | Đối chiếu từng giao dịch | [comparison-details-FO-20261117-151645-24e67c.csv](comparison-details-FO-20261117-151645-24e67c.csv) | Trạng thái phía client và có/không trên primary mới |
 | Snapshot mã đơn | [db-orders-FO-20261117-151645-24e67c.txt](db-orders-FO-20261117-151645-24e67c.txt) | 510 ID thuộc đúng run, lấy sau khi tải hoàn tất |
 | Ảnh chụp kết quả | [Minh chứng TV3](evidence/tv3/README.md) | Schema, tải đọc/ghi, độ trễ, thời gian khôi phục và đối chiếu |
+
+### Cách tính độ trễ khi có tải
+
+Khoảng tải lấy từ giao dịch đầu tiên bắt đầu lúc
+`2026-11-17T14:18:55.6371159Z` đến lần đọc cuối lúc
+`2026-11-17T14:28:54.6095526Z`. CSV đo lag có 270 mẫu;
+258 mẫu nằm trong khoảng này và không có mẫu lag NULL.
+P95 là giá trị tại vị trí `ceil(0,95 × 258)` sau khi sắp xếp tăng dần.
+
+Cột `sampled_utc` của CSV gốc bị ghi `THH24` thay vì giờ `T14`.
+Khi phân tích riêng lần chạy này, thay `THH24:` bằng `T14:`
+trong bộ nhớ rồi lọc theo khoảng tải. CSV gốc được giữ nguyên.
+Script [plot-lag.ps1](../tests/plot-lag.ps1) tái tạo biểu đồ SVG.
+
+Trong cùng 258 mẫu, WAL gap trung bình là 0,9 byte,
+lớn nhất là 232 byte. Đây là một lần đo trên cùng Docker host.
 
 ## Diễn giải
 

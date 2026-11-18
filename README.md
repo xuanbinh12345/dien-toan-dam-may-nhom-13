@@ -57,7 +57,7 @@ Trạng thái trên được ghi nhận cuối lần thử, không phải trạn
 | Phép thử | Kết quả quan sát |
 |---|---|
 | Tải bình thường | 444 ACK; 444 lần đọc thấy đơn hàng trên replica |
-| Replication lag | Đã lưu CSV; chưa tổng hợp thống kê và biểu đồ |
+| Replication lag | Trong 258 mẫu khi có tải: mean 1,326 ms; p95 1,797 ms; max 10,411 ms |
 | Tải khi failover | 511 lần thử ghi: 510 ACK và 1 UNCONFIRMED |
 | Đối chiếu failover | 510/510 ACK hiện diện trên primary mới |
 | Khôi phục ghi sau yêu cầu dừng | 2,316 giây đến ACK đầu tiên trên primary mới |
@@ -136,7 +136,7 @@ Khi tái lập, dùng môi trường riêng và làm theo điều kiện đầu 
 
 ## 7. Công việc còn lại và sản phẩm cuối
 
-- Tổng hợp độ trễ trong khoảng có tải, xử lý NULL và tạo biểu đồ.
+- Đo lag thêm nhiều lần, với các mức tải khác nhau và mục tiêu xác định trước.
 - Kiểm chứng dựng mới từ volume rỗng và tái lập replica sau failover.
 - Bổ sung kịch bản HA kết hợp backup/PITR.
 - Xác định mục tiêu RPO/RTO trước các lần thử bổ sung.

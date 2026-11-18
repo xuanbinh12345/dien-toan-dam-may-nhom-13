@@ -19,7 +19,7 @@ Các cập nhật hoàn thiện tiếp theo thực hiện trên nhánh codex/hoa
 | Hạ tầng | Dựng PostgreSQL primary–replica bằng Docker Compose; kiểm tra streaming replication bất đồng bộ |
 | Schema | Tạo bảng orders, khóa chính order_id và ràng buộc amount > 0 |
 | Tải bình thường | 444 giao dịch ACK; 444 lần đọc thấy đơn hàng trên replica |
-| Đo replication | Đã lưu CSV độ trễ và khoảng cách WAL; chưa tổng hợp thống kê và biểu đồ |
+| Đo replication | Đã lưu CSV và biểu đồ; trong khoảng có tải có 258 mẫu, mean 1,326 ms, p95 1,797 ms, max 10,411 ms; WAL gap max 232 byte |
 | Failover | Dừng primary bằng script, promote replica và chuyển đích ghi |
 | Đối chiếu sau failover | 510/510 giao dịch ACK có trên primary mới; 1 UNCONFIRMED không có trong dữ liệu đối chiếu |
 | Base backup | Tạo bản sao vật lý, kiểm tra pg_verifybackup thành công |
@@ -86,8 +86,7 @@ Không dùng volume dữ liệu nguồn làm đích khôi phục.
 
 ## Công việc còn lại
 
-1. Tổng hợp mean, p95, max của độ trễ trong khoảng có tải;
-   xử lý giá trị NULL rõ ràng và tạo biểu đồ.
+1. Đo thêm nhiều lần và ở các mức tải khác nhau để đánh giá độ biến động của replication lag; xác định mục tiêu trước khi chạy.
 2. Cập nhật README chính, README kết quả và sơ đồ theo kết quả thực tế.
 3. Kiểm chứng dựng mới từ volume rỗng trong môi trường riêng.
 4. Thực hiện quy trình tái lập replica sau failover.
