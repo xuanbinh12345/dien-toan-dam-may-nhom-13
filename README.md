@@ -102,6 +102,8 @@ Chi tiết, run ID và dữ liệu thô: [results/README.md](results/README.md).
 |---|---|
 | [docs/PROGRESS.md](docs/PROGRESS.md) | Tiến độ, trạng thái cuối lần thử và công việc còn lại |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Sơ đồ các môi trường HA, PITR tích hợp và bản sao trên ổ D |
+| [docs/RPO_RTO_SUMMARY.md](docs/RPO_RTO_SUMMARY.md) | Mục tiêu và kết quả quan sát theo từng phép thử |
+| [docs/OPERATIONS_COST_SECURITY.md](docs/OPERATIONS_COST_SECURITY.md) | Dọn tài nguyên, chi phí và rủi ro bảo mật |
 | [infra/README.md](infra/README.md) | Hướng dẫn hạ tầng |
 | [infra/compose-isolated.yaml](infra/compose-isolated.yaml) | Cấu hình cụm HA dùng trong lần thử đã lưu |
 | [infra/FAILOVER.md](infra/FAILOVER.md) | Quy trình chuyển đổi primary |
