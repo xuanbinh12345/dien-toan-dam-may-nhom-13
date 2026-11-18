@@ -28,6 +28,7 @@ Các cập nhật hoàn thiện tiếp theo thực hiện trên nhánh codex/hoa
 | PITR | Khôi phục về thời điểm trước khi xóa 3 đơn hàng trong môi trường backup riêng |
 | Kiểm tra PITR | Số dòng trước và sau khôi phục đều là 4; checksum khớp |
 | Đọc/ghi sau PITR | Kết thúc recovery, ghi đơn hàng mới thành công và đọc lại được |
+| Tái lập dự phòng sau failover | Trên lab13-bootstrap-check: dừng primary cũ, promote replica, tạo replica mới từ volume rỗng; primary mới thấy streaming/async và replica mới đọc được đơn REJOIN-20261118-001 trị giá 456.78 |
 
 ## Kết quả failover
 
@@ -89,15 +90,14 @@ Không dùng volume dữ liệu nguồn làm đích khôi phục.
 
 1. Đo thêm nhiều lần và ở các mức tải khác nhau để đánh giá độ biến động của replication lag; xác định mục tiêu trước khi chạy.
 2. Rà soát README và cập nhật sơ đồ theo kiến trúc, kết quả thực tế.
-3. Thực hiện quy trình tái lập replica sau failover.
-4. Bổ sung thử nghiệm xóa dữ liệu được sao chép sang replica
+3. Bổ sung thử nghiệm xóa dữ liệu được sao chép sang replica
    rồi phục hồi bằng backup/PITR của cùng hệ thống HA.
    Bài PITR hiện tại được thực hiện trên môi trường riêng.
-5. Xác định mục tiêu RPO/RTO trước các lần đo bổ sung,
+4. Xác định mục tiêu RPO/RTO trước các lần đo bổ sung,
    đo đầy đủ thời gian phục hồi dịch vụ.
-6. Hoàn thiện chính sách retention, bản sao ngoài máy và bảo mật.
+5. Hoàn thiện chính sách retention, bản sao ngoài máy và bảo mật.
    Phân biệt rõ đề xuất với cơ chế đã triển khai, kiểm thử.
-7. Hoàn thiện báo cáo, slide và video/demo.
+6. Hoàn thiện báo cáo, slide và video/demo.
 
 ## Giới hạn hiện tại
 

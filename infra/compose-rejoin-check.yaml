@@ -1,0 +1,16 @@
+services:
+  rejoin:
+    image: postgres:16
+    environment:
+      PGDATA: /var/lib/postgresql/data
+      PGPASSWORD: ${REPLICATION_PASSWORD:?Set REPLICATION_PASSWORD}
+      PRIMARY_HOST: lab13-bootstrap-check-replica-1
+    entrypoint: ["bash", "/opt/lab/rejoin-entrypoint.sh"]
+    ports:
+      - "127.0.0.1:5555:5432"
+    volumes:
+      - rejoin_data:/var/lib/postgresql/data
+      - ./isolated/rejoin-entrypoint.sh:/opt/lab/rejoin-entrypoint.sh:ro
+
+volumes:
+  rejoin_data:
