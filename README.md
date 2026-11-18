@@ -20,8 +20,9 @@ và các script PowerShell gọi psql trong container.
 
 Xem [tiến độ và công việc còn lại](docs/PROGRESS.md).
 
-Việc tích hợp mã nguồn đã hoàn thành cho các phần trên.
-Dự án còn cần phân tích số liệu, kiểm chứng bổ sung và hoàn thiện báo cáo.
+Các phép thử hạ tầng, tải/đo, backup/PITR và kết hợp replication với PITR
+đã có kết quả và dữ liệu lưu trong repository. Dự án còn cần đo bổ sung,
+hoàn thiện sơ đồ và báo cáo.
 
 ## 2. Môi trường thử nghiệm
 
@@ -35,17 +36,22 @@ Tag `postgres:16` có thể thay đổi theo các bản cập nhật.
 | HA — replica ban đầu | lab13-isolated-replica-1 | 5544 |
 | Nguồn backup/PITR riêng | lab13-backup-source-1 | 5545 |
 | PostgreSQL phục hồi | lab13-restore-restore-1 | 5546 |
+| Cụm tích hợp — primary | lab13-integrated-primary-1 | 5563 |
+| Cụm tích hợp — replica | lab13-integrated-replica-1 | 5564 |
+| Bản phục hồi từ cụm tích hợp | lab13-integrated-restore-restore-1 | 5565 |
 
 Cổng PostgreSQL bên trong container là 5432.
 Database thử nghiệm là `ha_lab`, bảng dữ liệu là `public.orders`.
 
-Bài thử HA và bài thử backup/PITR hiện sử dụng các môi trường riêng.
+Đã thực hiện hai bài thử riêng và một bài thử tích hợp replication với
+backup/PITR trên cụm `lab13-integrated`.
 
 ### Trạng thái cuối các lần thử
 
 - Primary cũ của cụm HA đã dừng.
 - Replica cũ đã được promote thành primary mới; tên container giữ nguyên.
-- Chưa tái lập replica thay thế.
+- Cụm `lab13-isolated` chưa có replica thay thế; trên cụm thử
+  `lab13-bootstrap-check` đã tạo replica mới sau failover.
 - PostgreSQL phục hồi đã kết thúc recovery và kiểm tra đọc/ghi thành công.
 
 Không chạy lại toàn bộ cụm HA hoặc khởi động primary cũ trên dữ liệu
@@ -66,6 +72,7 @@ Trạng thái trên được ghi nhận cuối lần thử, không phải trạn
 | Kiểm tra dữ liệu PITR | Số dòng và checksum trước/sau khớp |
 | Khởi động restore đến quan sát paused | 1,935 giây |
 | Đọc/ghi sau PITR | Ghi đơn hàng mới thành công và đọc lại được |
+| HA kết hợp PITR | Xóa 3 đơn đã lan sang replica; bản PITR có lại 4 dòng, checksum khớp và đọc/ghi thành công |
 
 Chi tiết, run ID và dữ liệu thô: [results/README.md](results/README.md).
 
@@ -78,7 +85,8 @@ Chi tiết, run ID và dữ liệu thô: [results/README.md](results/README.md).
 - Không thiếu ACK trong một lần thử không chứng minh RPO luôn bằng 0.
 - 1,935 giây chưa phải RTO toàn bộ quá trình PITR.
 - Các container chạy trên cùng một Docker host.
-- Chưa thử xóa dữ liệu lan sang replica rồi PITR trên cùng hệ thống HA.
+- Bài thử kết hợp được thực hiện một lần trên cùng Docker host;
+  chưa đo RTO toàn bộ quy trình hoặc sự cố toàn host.
 
 ## 4. Cấu trúc và hướng dẫn
 
@@ -88,12 +96,16 @@ Chi tiết, run ID và dữ liệu thô: [results/README.md](results/README.md).
 | [infra/README.md](infra/README.md) | Hướng dẫn hạ tầng |
 | [infra/compose-isolated.yaml](infra/compose-isolated.yaml) | Cấu hình cụm HA dùng trong lần thử đã lưu |
 | [infra/FAILOVER.md](infra/FAILOVER.md) | Quy trình chuyển đổi primary |
+| [infra/REJOIN.md](infra/REJOIN.md) | Tạo replica mới sau failover trên cụm thử |
+| [infra/compose-integrated.yaml](infra/compose-integrated.yaml) | Cụm replication có WAL archive và base backup |
 | [backup/README.md](backup/README.md) | Tổng quan backup/PITR |
 | [backup/RUNBOOK.md](backup/RUNBOOK.md) | Hướng dẫn thực hiện backup và phục hồi |
 | [backup/RETENTION.md](backup/RETENTION.md) | Đề xuất lưu giữ và bảo vệ bản sao |
+| [docs/INTEGRATED_PITR.md](docs/INTEGRATED_PITR.md) | Runbook thử nghiệm kết hợp replication và PITR |
 | [tests/README.md](tests/README.md) | Cách chạy script tải và kiểm tra |
 | [tests/schema.sql](tests/schema.sql) | Schema dùng chung |
 | [results/README.md](results/README.md) | Dữ liệu thô và diễn giải kết quả |
+| [results/INT-20261118-150553/README.md](results/INT-20261118-150553/README.md) | CSV và kết quả thử nghiệm kết hợp |
 | [results/evidence/](results/evidence/) | Ảnh minh chứng theo phần việc |
 
 ## 5. Bắt đầu trên máy cá nhân
@@ -137,8 +149,6 @@ Khi tái lập, dùng môi trường riêng và làm theo điều kiện đầu 
 ## 7. Công việc còn lại và sản phẩm cuối
 
 - Đo lag thêm nhiều lần, với các mức tải khác nhau và mục tiêu xác định trước.
-- Kiểm chứng dựng mới từ volume rỗng và tái lập replica sau failover.
-- Bổ sung kịch bản HA kết hợp backup/PITR.
 - Xác định mục tiêu RPO/RTO trước các lần thử bổ sung.
 - Đo đầy đủ thời gian phục hồi dịch vụ.
 - Hoàn thiện sơ đồ, hướng dẫn và chính sách bảo vệ bản sao.

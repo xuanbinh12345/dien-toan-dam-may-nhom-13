@@ -30,11 +30,16 @@ docker exec lab13-isolated-primary-1 psql -U postgres -d ha_lab -c "SELECT appli
 docker exec lab13-isolated-replica-1 psql -U postgres -d ha_lab -c "SELECT pg_is_in_recovery();"
 ```
 
+## Kiểm chứng bổ sung ngày 18/11/2026
+
+- [x] [Dựng cụm mới từ volume rỗng](compose-bootstrap-check.yaml): primary streaming/async, replica đọc được đơn mới.
+- [x] [Tạo replica mới sau failover](REJOIN.md) trên cụm thử `lab13-bootstrap-check`; không tái sử dụng volume của primary cũ.
+- [x] [Cụm tích hợp](compose-integrated.yaml) có replication và WAL archive; [PITR sau khi xóa lan sang replica](../docs/INTEGRATED_PITR.md) đã khôi phục đủ dữ liệu.
+
 ## Chưa hoàn tất
 
-- [ ] Kiểm chứng lại toàn bộ bootstrap trên volume rỗng ở môi trường riêng; bản đã chạy có sửa pg_hba trong quá trình khởi tạo.
 - [ ] Khóa phiên bản/digest image để máy mới tái lập đúng phiên bản.
 - [ ] Viết và thử quy trình đưa primary cũ trở lại làm replica của primary mới.
-- [ ] Phối hợp TV2 thiết kế backup/WAL và miền lưu trữ độc lập.
+- [ ] Kiểm thử lưu bản sao backup/WAL ngoài Docker host và quy trình lưu giữ.
 
-**Không khởi động lại primary cũ hoặc chạy `compose up -d` toàn bộ trên môi trường đã promote.** Chưa có replica thay thế; bước tái lập dự phòng còn mở.
+**Không khởi động lại primary cũ hoặc chạy `compose up -d` toàn bộ trên môi trường đã promote.** Cụm `lab13-isolated` chưa có replica thay thế; cụm thử `lab13-bootstrap-check` đã tạo replica mới nhưng chưa đưa primary cũ trở lại.

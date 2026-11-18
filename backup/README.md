@@ -1,5 +1,7 @@
 # Backup và phục hồi PITR — TV2
 
+Ngoài lần thử riêng của TV2 bên dưới, nhóm đã thực hiện [bài thử tích hợp replication và PITR](../results/INT-20261118-150553/README.md): xóa ba đơn đã lan sang replica, rồi phục hồi từ backup/WAL của cùng cụm về trước thời điểm xóa. [Runbook tích hợp](../docs/INTEGRATED_PITR.md) và [Compose bổ sung cho restore](compose-integrated-restore.yaml) ghi rõ môi trường, volume và giới hạn của lần thử này.
+
 ## Kết quả đã kiểm chứng
 
 Đã thực hiện PITR trên môi trường riêng PostgreSQL **16.15**: archive WAL, tạo base backup, kiểm tra manifest, ghi dữ liệu sau backup, xóa ba đơn, restore tới trước thời điểm xóa, đối chiếu số dòng/checksum và kiểm tra đọc/ghi sau phục hồi.

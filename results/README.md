@@ -76,20 +76,41 @@ chuẩn bị dữ liệu khôi phục và kiểm tra dịch vụ đọc/ghi.
 
 Đã có ảnh chụp log recovery; chưa lưu log restore dạng văn bản riêng.
 Kết quả này chứng minh PITR trên môi trường backup riêng.
-Chưa thực hiện bài thử xóa dữ liệu lan sang replica rồi PITR
-trên cùng hệ thống HA.
+Bài thử kết hợp HA và PITR đã được thực hiện sau đó trên cụm
+`lab13-integrated`; xem phần bên dưới.
+
+## Thử nghiệm kết hợp replication và PITR
+
+Run ID: `INT-20261118-150553`.
+
+Cụm `lab13-integrated` có primary, replica và WAL archive.
+Sau base backup, nhóm ghi ba đơn hàng và xác nhận replica đọc được.
+Lệnh xóa ba đơn trên primary đã lan sang replica: cả hai còn
+0 đơn thử nghiệm. PostgreSQL phục hồi từ backup và WAL archive
+dừng tại `2026-11-18 08:08:44.585216+00`, trước commit xóa.
+Bản phục hồi có lại đủ 4 dòng; checksum trước/sau cùng là
+`d86a2624608b97232e95955f5c8246fb`. Sau khi kết thúc recovery,
+đơn mới trị giá 999.99 được ghi và đọc lại thành công.
+
+- [Kết quả và CSV của lần thử](INT-20261118-150553/README.md).
+- [Runbook tái lập](../docs/INTEGRATED_PITR.md).
+- [Cấu hình cụm tích hợp](../infra/compose-integrated.yaml).
+
+Đây là một lần thử trên cùng Docker host. Chưa đo RTO toàn bộ
+quy trình hoặc xác lập RPO/RTO cho các dạng sự cố khác.
 
 ## Phân loại ảnh minh chứng
 
 - [TV1](evidence/tv1/): hạ tầng, replication và điều khiển failover.
 - [TV2](evidence/tv2/README.md): backup, WAL archive, PITR và kiểm tra phục hồi.
 - [TV3](evidence/tv3/README.md): schema, tải, đo lag và đối chiếu giao dịch.
+- [Ảnh 18–19](evidence/tv3/): thống kê và biểu đồ độ trễ replication.
+- [Ảnh 20–21](evidence/tv1/): dựng cụm mới và tạo replica sau failover.
+- [Ảnh 22–24, 26–28](evidence/integrated/): thử nghiệm replication kết hợp PITR.
 
-Các ảnh nằm trực tiếp trong `evidence/`
-(`01-failover-status.png`, `02-write-after-failover.png`,
-`03-pitr.png`, `04-backup-verify.png`, `05-schema.png`,
-`08-failover.png`) thuộc thử nghiệm trước với cụm khác.
-Giữ để tham khảo, không ghép chúng vào bằng chứng của các run hiện tại.
+Sáu ảnh cũ nằm trực tiếp trong `evidence/` (`01`–`05` và `08`)
+thuộc thử nghiệm trước với cụm khác đã được bỏ. Ảnh minh chứng
+của các run hiện tại nằm trong các thư mục phân loại bên trên.
 
 ## Quy ước
 
