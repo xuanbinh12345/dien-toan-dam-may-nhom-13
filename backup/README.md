@@ -44,7 +44,8 @@ Source dùng ba volume riêng: `lab13-backup_source_data`, `lab13-backup_wal_arc
 - [x] Phép thử chức năng Backup/PITR độc lập thành công.
 - [x] Đối chiếu dữ liệu và kiểm tra client psql đọc/ghi sau restore.
 - [ ] Tái lập trên máy khác và lưu log mới đầy đủ.
-- [ ] Tích hợp với HA, thử truyền thao tác xóa sang replica.
+- [x] Thử tích hợp HA và PITR: xác nhận thao tác xóa lan sang replica,
+  sau đó phục hồi từ backup/WAL cùng cụm; xem [kết quả](../results/INT-20261118-150553/README.md).
 - [ ] Thống nhất mục tiêu RPO/RTO trước lần đo mới; đo tổng thời gian đến dịch vụ dùng được và nhiều lần lặp.
 - [ ] Thực hiện lịch backup, retention, bảo vệ/mã hóa, bản sao ngoài host theo [đề xuất](RETENTION.md).
 

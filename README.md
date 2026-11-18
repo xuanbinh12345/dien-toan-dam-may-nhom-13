@@ -73,6 +73,10 @@ Trạng thái trên được ghi nhận cuối lần thử, không phải trạn
 | Khởi động restore đến quan sát paused | 1,935 giây |
 | Đọc/ghi sau PITR | Ghi đơn hàng mới thành công và đọc lại được |
 | HA kết hợp PITR | Xóa 3 đơn đã lan sang replica; bản PITR có lại 4 dòng, checksum khớp và đọc/ghi thành công |
+| Đo lag lặp | 6 lượt ở 3 mức nghỉ; 1132/1132 ACK và 1132/1132 lần đọc thấy đơn |
+| Failover khi có tải | 204/204 ACK hiện diện; 1 UNCONFIRMED không hiện diện; 1,333 giây đến ACK đầu tiên trên node mới |
+| Phục hồi database có kiểm soát | 1,078 giây từ yêu cầu dừng đến ghi và đọc lại thành công; không gồm phát hiện lỗi hay chuyển endpoint |
+| PITR từ bản sao ổ D | Backup verify thành công; 4 dòng và checksum khớp, ghi/đọc thành công; bản sao nằm cùng host |
 
 Chi tiết, run ID và dữ liệu thô: [results/README.md](results/README.md).
 
@@ -87,6 +91,10 @@ Chi tiết, run ID và dữ liệu thô: [results/README.md](results/README.md).
 - Các container chạy trên cùng một Docker host.
 - Bài thử kết hợp được thực hiện một lần trên cùng Docker host;
   chưa đo RTO toàn bộ quy trình hoặc sự cố toàn host.
+- Sáu lượt đo lag là tải tuần tự qua Docker CLI; không phải benchmark
+  nhiều client đồng thời. Bản sao trên ổ D chưa phải bản sao ngoài host.
+- 1,333 giây là từ yêu cầu dừng đến ACK đầu tiên; 1,078 giây là đến khi
+  ghi và đọc lại thành công trong một run khác. Không coi hai số là SLA.
 
 ## 4. Cấu trúc và hướng dẫn
 
@@ -148,9 +156,10 @@ Khi tái lập, dùng môi trường riêng và làm theo điều kiện đầu 
 
 ## 7. Công việc còn lại và sản phẩm cuối
 
-- Đo lag thêm nhiều lần, với các mức tải khác nhau và mục tiêu xác định trước.
-- Xác định mục tiêu RPO/RTO trước các lần thử bổ sung.
-- Đo đầy đủ thời gian phục hồi dịch vụ.
+- Đánh giá thêm failover đột ngột, nhiều client đồng thời và nhiều lần
+  thử; đặt mục tiêu RPO/RTO trước từng phép thử bổ sung.
+- Đo thêm thời gian phát hiện lỗi và chuyển endpoint ứng dụng nếu cần
+  đánh giá thời gian phục hồi dịch vụ đầu cuối.
 - Hoàn thiện sơ đồ, hướng dẫn và chính sách bảo vệ bản sao.
 - Hoàn thiện báo cáo 20–35 trang, slide và video 8–12 phút
   hoặc demo trực tiếp 15–20 phút theo hướng dẫn học phần.

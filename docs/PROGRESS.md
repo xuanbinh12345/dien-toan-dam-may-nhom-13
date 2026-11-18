@@ -1,6 +1,6 @@
 # Tiến độ dự án — Nhóm 13
 
-Cập nhật ngày 18/11/2026.
+Cập nhật ngày 19/11/2026.
 
 ## Trạng thái tích hợp mã nguồn
 
