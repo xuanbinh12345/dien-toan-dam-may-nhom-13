@@ -1,0 +1,2 @@
+﻿"run_id","load_start_utc","load_end_utc","raw_lag_samples","samples_during_load","null_lag_during_load","mean_lag_ms","p95_lag_ms","max_lag_ms","mean_replay_gap_bytes","max_replay_gap_bytes","timestamp_correction"
+"LOAD-20261117-141855","2026-11-17T14:18:55.6371159+00:00","2026-11-17T14:28:54.6095526+00:00","270","258","0","1.326","1.797","10.411","0.9","232","THH24: -> T14: for this run only"
