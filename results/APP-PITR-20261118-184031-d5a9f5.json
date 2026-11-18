@@ -1,0 +1,11 @@
+{
+  "run_id": "APP-PITR-20261118-184031-d5a9f5",
+  "checked_utc": "2026-11-18T18:40:31.163696+00:00",
+  "target_container": "lab13-host-copy-restore-restore-1",
+  "order_id": "APP-PITR-20261118-184031-d5a9f5",
+  "amount": "123.45",
+  "health_ok": true,
+  "write_ok": true,
+  "read_ok": true,
+  "result": "PASS"
+}

@@ -115,6 +115,7 @@ Chi tiết, run ID và dữ liệu thô: [results/README.md](results/README.md).
 | [backup/RETENTION.md](backup/RETENTION.md) | Đề xuất lưu giữ và bảo vệ bản sao |
 | [docs/INTEGRATED_PITR.md](docs/INTEGRATED_PITR.md) | Runbook thử nghiệm kết hợp replication và PITR |
 | [tests/README.md](tests/README.md) | Cách chạy script tải và kiểm tra |
+| [tests/APP_PITR_README.md](tests/APP_PITR_README.md) | Ứng dụng HTTP lab và kiểm thử sau PITR |
 | [tests/schema.sql](tests/schema.sql) | Schema dùng chung |
 | [results/README.md](results/README.md) | Dữ liệu thô và diễn giải kết quả |
 | [results/INT-20261118-150553/README.md](results/INT-20261118-150553/README.md) | CSV và kết quả thử nghiệm kết hợp |
