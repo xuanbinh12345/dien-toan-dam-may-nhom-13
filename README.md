@@ -101,6 +101,7 @@ Chi tiết, run ID và dữ liệu thô: [results/README.md](results/README.md).
 | Đường dẫn | Nội dung |
 |---|---|
 | [docs/PROGRESS.md](docs/PROGRESS.md) | Tiến độ, trạng thái cuối lần thử và công việc còn lại |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Sơ đồ các môi trường HA, PITR tích hợp và bản sao trên ổ D |
 | [infra/README.md](infra/README.md) | Hướng dẫn hạ tầng |
 | [infra/compose-isolated.yaml](infra/compose-isolated.yaml) | Cấu hình cụm HA dùng trong lần thử đã lưu |
 | [infra/FAILOVER.md](infra/FAILOVER.md) | Quy trình chuyển đổi primary |
@@ -160,7 +161,8 @@ Khi tái lập, dùng môi trường riêng và làm theo điều kiện đầu 
   thử; đặt mục tiêu RPO/RTO trước từng phép thử bổ sung.
 - Đo thêm thời gian phát hiện lỗi và chuyển endpoint ứng dụng nếu cần
   đánh giá thời gian phục hồi dịch vụ đầu cuối.
-- Hoàn thiện sơ đồ, hướng dẫn và chính sách bảo vệ bản sao.
+- Hoàn thiện hướng dẫn và chính sách bảo vệ bản sao; kiểm thử bản sao
+  trên thiết bị khác nếu có điều kiện.
 - Hoàn thiện báo cáo 20–35 trang, slide và video 8–12 phút
   hoặc demo trực tiếp 15–20 phút theo hướng dẫn học phần.
 
