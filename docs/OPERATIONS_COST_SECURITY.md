@@ -66,10 +66,9 @@ phải mức dùng cố định. Theo dõi dung lượng để tránh đầy ổ
 
 ## Bàn giao và tái lập
 
-- Repo cần README, sơ đồ, cấu hình, script, CSV/JSON thô và runbook;
-  phiên bản PostgreSQL 16.15 là phiên bản quan sát, còn Docker/Compose
-  cần ghi từ máy làm demo bằng `docker --version` và
-  `docker compose version`. Không ghi số phiên bản khi chưa đo.
+- Repo cần README, sơ đồ, cấu hình, script, CSV/JSON thô và runbook.
+  [Phiên bản công cụ đã quan sát trên máy lab](VERSIONS.md) được ghi kèm
+  ngày kiểm tra; khi làm demo trên máy khác, kiểm tra phiên bản ở máy đó.
 - [Bảng RPO/RTO](RPO_RTO_SUMMARY.md) phân biệt mục tiêu và quan sát.
   Trước nghiệm thu cần xác nhận lịch sử đóng góp của ba thành viên,
   kiểm tra bí mật/ảnh và tạo Git tag cho commit được nhóm chọn.
