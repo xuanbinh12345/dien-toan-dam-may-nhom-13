@@ -1,129 +1,153 @@
-# Nhóm 13 | Thiết kế cơ sở dữ liệu quan hệ sẵn sàng cao với sao lưu phục hồi đến thời điểm
+# Nhóm 13 — PostgreSQL HA, Backup và PITR
 
-**Môn học:** Điện toán đám mây 
+**Môn học:** Điện toán đám mây.
 
-Nhóm nghiên cứu cách phối hợp replication và backup để vừa giảm thời gian gián đoạn khi máy chủ chính dừng, vừa lấy lại dữ liệu khi người dùng xóa nhầm. Nhóm sẽ kiểm chứng bằng hai thí nghiệm trên dữ liệu đơn hàng giả lập.
+Dự án thử nghiệm streaming replication, chuyển đổi primary khi
+primary cũ dừng và khôi phục dữ liệu đến thời điểm trước khi xóa nhầm.
 
-Mở [3 Issue phân công](https://github.com/xuanbinh12345/dien-toan-dam-may-nhom-13/issues), tìm vai trò của mình trong bảng dưới, rồi làm theo mục **Bắt đầu trên máy cá nhân**. Mỗi người phụ trách một mảng kỹ thuật. Trưởng nhóm nhận một trong ba mảng và phụ trách thêm việc ghép bài.
+Môi trường triển khai: Docker Desktop, Docker Compose, PostgreSQL
+và các script PowerShell gọi psql trong container.
 
-## 1. Ai làm gì và bàn giao cho ai?
+## 1. Tiến độ hiện tại
 
-| Vai trò | Người nhận | Công việc và sản phẩm đầu tiên | Khi ghép bài |
-|---|---|---|---|
-| TV1 · Hạ tầng | [ tên] | Chốt phiên bản PostgreSQL, báo vào Issue. Dựng primary và replica bằng Docker Compose. Bàn giao cấu hình, cách khởi động và kết quả truy vấn cùng một mã đơn trên hai máy chủ trong `infra/`. | Cung cấp địa chỉ kết nối cho TV2, TV3. Đo độ trễ sao chép cùng TV3. Viết và chạy quy trình dừng primary, cô lập máy cũ, nâng replica thành primary mới rồi chuyển kết nối ứng dụng. |
-| TV2 · Sao lưu và phục hồi | [ tên] | Dùng PostgreSQL riêng để thử sao lưu toàn phần và lưu trữ WAL (nhật ký ghi trước). Bàn giao lệnh backup, cách kiểm tra WAL và hướng dẫn khôi phục vào một môi trường riêng trong `backup/`. | Áp dụng cấu hình lên môi trường chung với TV1. Phục hồi đến mốc ngay trước khi xóa đơn hàng. Giao địa chỉ máy đã phục hồi cho TV3 kiểm tra. |
-| TV3 · Dữ liệu và kiểm thử | [ tên] | Đưa `tests/schema.sql` lên trước để hai bạn dùng chung. Viết script tạo tải đọc/ghi, ghi nhận kết quả từng giao dịch ra CSV và hướng dẫn chạy trong `tests/`. | Giữ log phía ứng dụng, đo thời gian gián đoạn, tìm giao dịch thiếu, kiểm tra dữ liệu sau phục hồi và tạo lại bảng/biểu đồ từ số liệu thô. |
+Đã tích hợp phần việc của ba thành viên vào main:
 
-**Việc của leader trong buổi đầu:** điền ba tên ở bảng trên, ghi hạn bàn giao vào từng Issue và chốt lịch ghép bài. Trước buổi đo, cả nhóm ghi mục tiêu RPO/RTO cho từng kịch bản và lý do chọn ngưỡng. RPO thể hiện khoảng mất dữ liệu có thể chấp nhận, RTO thể hiện thời gian gián đoạn có thể chấp nhận.
-
-## 2. Phần mềm và công cụ
-
-Phương án đề xuất cho máy cá nhân là **Docker Compose + PostgreSQL**, dùng Python cho chương trình kiểm thử. TV1 ghi phiên bản PostgreSQL đã chốt tại đây: **[điền phiên bản/tag]**. Cả nhóm dùng cùng tag khi triển khai.
-
-| Ai dùng | Công cụ | Dùng vào việc gì? |
+| Phần việc | Nội dung đã bàn giao | Pull request |
 |---|---|---|
-| Cả nhóm | Git, tài khoản GitHub, PowerShell hoặc Terminal | Tải repo, tạo nhánh, đưa bài làm lên và theo dõi Issue. |
-| Cả nhóm | Docker Desktop trên Windows/macOS, hoặc Docker Engine kèm Compose trên Linux | Chạy môi trường lab theo cùng cấu hình. Mở Docker trước khi khởi động lab. |
-| Cả nhóm | Trình soạn thảo, ví dụ VS Code | Sửa SQL, YAML, Python và hướng dẫn Markdown. |
-| TV1, TV2, TV3 | PostgreSQL và psql trong container | Tạo bảng, đọc/ghi dữ liệu và kiểm tra trạng thái. Có thể dùng thêm pgAdmin nếu muốn xem bảng bằng giao diện. |
-| TV1 | Docker Compose, công cụ quản trị PostgreSQL | Dựng hai dịch vụ, kiểm tra replication và chuyển vai trò khi primary dừng. |
-| TV2 | pg_basebackup và cơ chế lưu WAL của PostgreSQL | Tạo bản sao lưu vật lý, lưu WAL và phục hồi đến thời điểm đã chọn (PITR). |
-| TV3 | Python 3, psycopg, mô-đun csv; matplotlib khi vẽ biểu đồ | Kết nối database, tạo giao dịch, ghi log và phân tích số liệu. TV3 ghi phiên bản thư viện đã thử vào `tests/requirements.txt`. |
+| TV1 — Hạ tầng | Primary–replica, kiểm tra replication, script và quy trình failover, minh chứng | [#4](https://github.com/xuanbinh12345/dien-toan-dam-may-nhom-13/pull/4) |
+| TV3 — Tải và đo lường | Script tải, đo lag, đối chiếu giao dịch, CSV và minh chứng | [#6](https://github.com/xuanbinh12345/dien-toan-dam-may-nhom-13/pull/6) |
+| TV2 — Backup/PITR | Base backup, WAL archive, phục hồi theo thời điểm, kiểm tra dữ liệu và đọc/ghi | [#5](https://github.com/xuanbinh12345/dien-toan-dam-may-nhom-13/pull/5) |
 
-## 3. Cấu trúc dự án
+Xem [tiến độ và công việc còn lại](docs/PROGRESS.md).
 
-Các thư mục chia theo phần việc. Các file triển khai bên dưới là **đầu ra dự kiến** để từng người bổ sung khi hoàn thành task.
+Việc tích hợp mã nguồn đã hoàn thành cho các phần trên.
+Dự án còn cần phân tích số liệu, kiểm chứng bổ sung và hoàn thiện báo cáo.
+
+## 2. Môi trường thử nghiệm
+
+Image của môi trường nguồn: `postgres:16`.
+Phiên bản quan sát trong các lần thử đã lưu: PostgreSQL 16.15.
+Tag `postgres:16` có thể thay đổi theo các bản cập nhật.
+
+| Môi trường | Container | Cổng trên máy host |
+|---|---|---|
+| HA — primary ban đầu | lab13-isolated-primary-1 | 5543 |
+| HA — replica ban đầu | lab13-isolated-replica-1 | 5544 |
+| Nguồn backup/PITR riêng | lab13-backup-source-1 | 5545 |
+| PostgreSQL phục hồi | lab13-restore-restore-1 | 5546 |
+
+Cổng PostgreSQL bên trong container là 5432.
+Database thử nghiệm là `ha_lab`, bảng dữ liệu là `public.orders`.
+
+Bài thử HA và bài thử backup/PITR hiện sử dụng các môi trường riêng.
+
+### Trạng thái cuối các lần thử
+
+- Primary cũ của cụm HA đã dừng.
+- Replica cũ đã được promote thành primary mới; tên container giữ nguyên.
+- Chưa tái lập replica thay thế.
+- PostgreSQL phục hồi đã kết thúc recovery và kiểm tra đọc/ghi thành công.
+
+Không chạy lại toàn bộ cụm HA hoặc khởi động primary cũ trên dữ liệu
+hiện có khi chưa thực hiện quy trình tái gia nhập phù hợp.
+Trạng thái trên được ghi nhận cuối lần thử, không phải trạng thái giám sát trực tiếp.
+
+## 3. Kết quả chính
+
+| Phép thử | Kết quả quan sát |
+|---|---|
+| Tải bình thường | 444 ACK; 444 lần đọc thấy đơn hàng trên replica |
+| Replication lag | Đã lưu CSV; chưa tổng hợp thống kê và biểu đồ |
+| Tải khi failover | 511 lần thử ghi: 510 ACK và 1 UNCONFIRMED |
+| Đối chiếu failover | 510/510 ACK hiện diện trên primary mới |
+| Khôi phục ghi sau yêu cầu dừng | 2,316 giây đến ACK đầu tiên trên primary mới |
+| Base backup | pg_verifybackup thành công |
+| PITR trước khi xóa | Khôi phục 3 đơn hàng đã xóa; tổng số dòng trở lại 4 |
+| Kiểm tra dữ liệu PITR | Số dòng và checksum trước/sau khớp |
+| Khởi động restore đến quan sát paused | 1,935 giây |
+| Đọc/ghi sau PITR | Ghi đơn hàng mới thành công và đọc lại được |
+
+Chi tiết, run ID và dữ liệu thô: [results/README.md](results/README.md).
+
+**Giới hạn diễn giải:**
+
+- Failover được người vận hành kích hoạt bằng script, chưa tự động phát hiện lỗi.
+- 2,316 giây tính từ yêu cầu dừng primary đến ACK đầu tiên trên primary mới,
+  bao gồm thời gian điều khiển và chờ lượt ghi.
+- Không coi giao dịch UNCONFIRMED là giao dịch ACK bị mất.
+- Không thiếu ACK trong một lần thử không chứng minh RPO luôn bằng 0.
+- 1,935 giây chưa phải RTO toàn bộ quá trình PITR.
+- Các container chạy trên cùng một Docker host.
+- Chưa thử xóa dữ liệu lan sang replica rồi PITR trên cùng hệ thống HA.
+
+## 4. Cấu trúc và hướng dẫn
 
 | Đường dẫn | Nội dung |
 |---|---|
-| `README.md` | Hướng dẫn chung, phân công, quy ước và trình tự ghép bài. |
-| [infra/](infra/) | Hướng dẫn hạ tầng của TV1. Dự kiến có `compose.yaml`, cấu hình sao chép và quy trình failover. |
-| [backup/](backup/) | Hướng dẫn của TV2, cấu hình lưu WAL, lệnh backup/restore và cách chọn mốc phục hồi. |
-| [tests/](tests/) | Hướng dẫn của TV3, `schema.sql`, script tạo tải, truy vấn kiểm tra và script phân tích số liệu. |
-| `results/failover/lan-01/` | CSV và log của một lần thử dừng primary. Tạo thư mục mới cho mỗi lần đo. |
-| `results/pitr/lan-01/` | Mốc phục hồi, log và kết quả kiểm tra trước/sau của một lần thử xóa nhầm. |
+| [docs/PROGRESS.md](docs/PROGRESS.md) | Tiến độ, trạng thái cuối lần thử và công việc còn lại |
+| [infra/README.md](infra/README.md) | Hướng dẫn hạ tầng |
+| [infra/compose-isolated.yaml](infra/compose-isolated.yaml) | Cấu hình cụm HA dùng trong lần thử đã lưu |
+| [infra/FAILOVER.md](infra/FAILOVER.md) | Quy trình chuyển đổi primary |
+| [backup/README.md](backup/README.md) | Tổng quan backup/PITR |
+| [backup/RUNBOOK.md](backup/RUNBOOK.md) | Hướng dẫn thực hiện backup và phục hồi |
+| [backup/RETENTION.md](backup/RETENTION.md) | Đề xuất lưu giữ và bảo vệ bản sao |
+| [tests/README.md](tests/README.md) | Cách chạy script tải và kiểm tra |
+| [tests/schema.sql](tests/schema.sql) | Schema dùng chung |
+| [results/README.md](results/README.md) | Dữ liệu thô và diễn giải kết quả |
+| [results/evidence/](results/evidence/) | Ảnh minh chứng theo phần việc |
 
-## 4. Bắt đầu trên máy cá nhân
+## 5. Bắt đầu trên máy cá nhân
 
-**Bước 1.** Mở PowerShell hoặc Terminal. Kiểm tra công cụ.
+Cài Git, Docker Desktop và sử dụng PowerShell.
+Có thể dùng VS Code để chỉnh sửa SQL, YAML, PowerShell và Markdown.
 
-```sh
+Các script kiểm thử hiện có sử dụng PowerShell và psql trong container;
+không yêu cầu cài PostgreSQL hoặc Python trên host để chạy các script này.
+
+Kiểm tra công cụ:
+
+```powershell
 git --version
 docker --version
 docker compose version
 docker info
+
 ```
 
-TV3 kiểm tra thêm bằng `py --version` trên Windows hoặc `python3 --version` trên Linux/macOS. Nếu `docker info` báo lỗi kết nối, mở Docker Desktop hoặc khởi động Docker Engine rồi thử lại.
+Đọc hướng dẫn tương ứng trong infra/, backup/ và tests/.
+Chuẩn bị các file môi trường theo mẫu, dùng mật khẩu riêng cho máy lab.
 
-**Bước 2.** Tải repo lần đầu. Chạy từng dòng:
+Nếu đã có repository, không clone thêm vào bên trong thư mục dự án.
+Lưu các thay đổi chưa commit trước khi chuyển nhánh hoặc cập nhật code.
 
-```sh
-git clone https://github.com/xuanbinh12345/dien-toan-dam-may-nhom-13.git
-cd dien-toan-dam-may-nhom-13
-git status
-```
+Không chạy lại thử nghiệm trên volume hiện có chỉ để lấy ảnh.
+Khi tái lập, dùng môi trường riêng và làm theo điều kiện đầu vào của runbook.
 
-Nếu đã tải repo, mở terminal trong thư mục dự án, chuyển về `main` rồi lấy bản mới bằng `git pull --ff-only`. Lưu công việc đang làm trước khi chuyển nhánh.
+## 6. Quy ước làm việc và dữ liệu
 
-**Bước 3.** Mỗi người tạo một nhánh cho task mình nhận. Chạy **một** trong các lệnh dưới đây:
+- Thực hiện thay đổi trên nhánh riêng, kiểm tra rồi tạo PR vào main.
+- Mô tả chính xác phần đã thực hiện và kết quả kiểm thử trong PR.
+- Chỉ thêm vào commit các file thuộc phạm vi thay đổi.
+- Giữ nguyên run ID để ghép đúng CSV, mốc thời gian và minh chứng.
+- Thời gian dùng UTC; ghi rõ đơn vị trong bảng và biểu đồ.
+- Không commit mật khẩu, file .env, volume dữ liệu, base backup hoặc WAL thật.
+- results/write-target.txt là trạng thái cục bộ, được Git bỏ qua.
+- Tài liệu retention là đề xuất; không coi là cơ chế tự động đã kiểm thử.
 
-| Người thực hiện | Lệnh |
-|---|---|
-| TV1 | `git switch -c tv1/ha` |
-| TV2 | `git switch -c tv2/backup-pitr` |
-| TV3 | `git switch -c tv3/workload` |
+## 7. Công việc còn lại và sản phẩm cuối
 
-**Bước 4.** Làm song song. TV1 chuẩn bị cụm và công bố phiên bản. TV3 tạo bảng trên một PostgreSQL thử nghiệm, gửi riêng phần `schema.sql` để leader ghép sớm vào main. TV2 thử cơ chế sao lưu trên máy riêng. Thống nhất database `ha_lab`, bảng `orders`, các cột `order_id` (mã duy nhất), `amount` và `created_at`. Dùng cùng file schema và giờ UTC cho các lần thử.
-
-**Bước 5.** Khi TV1 đã bàn giao `infra/compose.yaml` và hướng dẫn biến môi trường, đứng ở thư mục gốc repo rồi chạy:
-
-```sh
-docker compose -f infra/compose.yaml config --quiet
-docker compose -f infra/compose.yaml up -d
-docker compose -f infra/compose.yaml ps
-```
-
-TV1 bổ sung vào `infra/README.md` tên dịch vụ thật, cổng truy cập, cách nạp schema và câu lệnh kiểm tra replication. Cả nhóm chỉ bắt đầu đo khi ghi một đơn trên primary và đọc lại đúng mã đơn trên replica. Khi kết thúc buổi thử, dừng cụm bằng `docker compose -f infra/compose.yaml stop` để giữ dữ liệu cho buổi sau.
-
-## 5. Quy trình giao và nhận bài trên GitHub
-
-1. Người nhận mở Issue và ghi ngày dự kiến bàn giao. Nếu cần đầu vào, bình luận rõ tên file hoặc thông tin cần từ bạn nào.
-2. Làm và kiểm tra trên nhánh riêng. Ví dụ TV1 chạy `git add infra/`, `git commit -m "Dựng cụm primary và replica"`, rồi `git push -u origin tv1/ha`. TV2, TV3 thay bằng thư mục và nhánh tương ứng. Để đẩy lên repo chung, thành viên cần nhận lời mời cộng tác của leader.
-3. Trên GitHub, mở **Pull request** vào `main`. Ghi Issue liên quan, thay đổi đã làm, lệnh chạy và kết quả mong đợi.
-4. Một người khác chạy lại theo README của thư mục. Khi kết quả đúng, leader ghép thay đổi và đóng Issue đã hoàn thành. Mỗi người cập nhật hướng dẫn cùng lúc với cấu hình hoặc script.
-
-Repo công khai. Chỉ đưa dữ liệu giả lập, mã nguồn, ví dụ cấu hình và log đã kiểm tra lên GitHub. Giữ mật khẩu, file `.env`, thư mục dữ liệu PostgreSQL, bản sao lưu thật và WAL trên máy lab. TV1 bổ sung `.gitignore` và ví dụ biến môi trường trước lần đưa cấu hình lên đầu tiên.
-
-## 6. Chạy hai thí nghiệm chung
-
-### A. Primary dừng trong lúc ứng dụng đang ghi
-
-1. TV3 chạy tải liên tục, ghi log phía ứng dụng gồm mã đơn, thời điểm UTC và kết quả. Chỉ đánh dấu thành công sau khi nhận xác nhận commit; ghi riêng các giao dịch mất kết nối trước khi biết kết quả.
-2. TV1 thu số liệu độ trễ sao chép, ghi rõ đơn vị và thời điểm lấy mẫu. Dừng primary và đánh dấu thời điểm sự cố.
-3. TV1 thực hiện failover theo hướng dẫn. TV3 ghi thời điểm ứng dụng commit thành công đầu tiên trên primary mới.
-4. Tính thời gian gián đoạn từ lúc primary dừng đến lần commit thành công đó. Đối chiếu các mã đơn đã được xác nhận trước sự cố với dữ liệu trên primary mới; lưu danh sách và số lượng mã thiếu.
-
-### B. Xóa nhầm đơn hàng và phục hồi bằng PITR
-
-1. Trên môi trường đã chuẩn bị lại, TV2 kiểm tra bản backup và WAL. TV3 tạo dữ liệu mẫu, ghi nhận mã đơn, số dòng và checksum. Tạm dừng ghi khi lấy mẫu chuẩn để có thể so sánh đúng trạng thái.
-2. Ghi mốc UTC cần phục hồi ngay trước thao tác xóa. Thực hiện và commit lệnh xóa thử; TV1 kiểm tra thao tác đã lan sang replica. TV2 xác nhận WAL cần cho lần thử đã được lưu.
-3. TV2 dùng backup và WAL để phục hồi vào một PostgreSQL riêng đến mốc đã chọn. Ghi thời điểm bắt đầu, kết thúc và cung cấp địa chỉ kết nối cho TV3.
-4. TV3 so sánh mã đơn, số dòng và checksum với mẫu chuẩn, sau đó thử đọc/ghi từ ứng dụng. Lưu kết quả vào thư mục riêng của lần chạy.
-
-## 7. Ghi số liệu và nghiệm thu
-
-| Trước khi đo | Sau mỗi lần chạy |
-|---|---|
-| Ghi phiên bản, điều kiện tải, chế độ sao chép, mục tiêu RPO/RTO và mốc bắt đầu/kết thúc phép đo. | Lưu CSV thô, log UTC, số lần chạy, độ trễ, thời gian gián đoạn/phục hồi và kết quả kiểm tra dữ liệu. |
-| Chọn cách đánh giá mức mất dữ liệu theo thời gian; ghi thêm mã giao dịch để đối chiếu. | Báo cáo riêng số giao dịch thiếu và khoảng thời gian mất dữ liệu quan sát được. Nếu thiếu mốc đo, ghi rõ giới hạn. |
-| Thống nhất ai chạy, ai quan sát, ai lưu kết quả. | So sánh mục tiêu với số liệu thực tế. Mỗi biểu đồ có tên trục, đơn vị, điều kiện đo và số lần lặp. |
-
-**Nhóm bàn giao:** cấu hình và mã nguồn có lịch sử đóng góp của ba thành viên, sơ đồ kiến trúc và luồng backup/WAL, hướng dẫn tái lập, dữ liệu thô và script vẽ biểu đồ. Báo cáo 20–35 trang trình bày hai kịch bản, kết quả, giới hạn khi chạy trên cùng một máy, lịch sao lưu, thời gian lưu giữ và phương án giữ bản sao ngoài máy chủ. Chuẩn bị video 8–12 phút hoặc demo trực tiếp 15–20 phút theo hướng dẫn học phần.
+- Tổng hợp độ trễ trong khoảng có tải, xử lý NULL và tạo biểu đồ.
+- Kiểm chứng dựng mới từ volume rỗng và tái lập replica sau failover.
+- Bổ sung kịch bản HA kết hợp backup/PITR.
+- Xác định mục tiêu RPO/RTO trước các lần thử bổ sung.
+- Đo đầy đủ thời gian phục hồi dịch vụ.
+- Hoàn thiện sơ đồ, hướng dẫn và chính sách bảo vệ bản sao.
+- Hoàn thiện báo cáo 20–35 trang, slide và video 8–12 phút
+  hoặc demo trực tiếp 15–20 phút theo hướng dẫn học phần.
 
 ## 8. Tài liệu tham khảo
 
-1. Bài giảng Chương 3 – Lưu trữ và xử lý dữ liệu.
-2. Bài giảng Chương 4 – An toàn và bảo mật đám mây.
-3. [NIST SP 800-34 Rev. 1 – Contingency Planning Guide for Federal Information Systems](https://doi.org/10.6028/NIST.SP.800-34r1).
-4. [PostgreSQL Documentation](https://www.postgresql.org/docs/) – chọn đúng phiên bản nhóm triển khai khi tra cứu replication, failover, backup và PITR.
+1. Bài giảng Chương 3 — Lưu trữ và xử lý dữ liệu.
+2. Bài giảng Chương 4 — An toàn và bảo mật đám mây.
+3. [NIST SP 800-34 Rev. 1](https://doi.org/10.6028/NIST.SP.800-34r1).
+4. [PostgreSQL 16 Documentation](https://www.postgresql.org/docs/16/).
