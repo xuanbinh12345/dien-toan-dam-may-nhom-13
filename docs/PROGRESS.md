@@ -49,6 +49,11 @@ Run ID: FO-20261117-151645-24e67c.
 Không coi 1 giao dịch UNCONFIRMED là giao dịch ACK bị mất.
 Kết quả một lần thử không chứng minh replication bất đồng bộ luôn có RPO bằng 0.
 
+Phép thử bổ sung ngày 18/11 trên `lab13-rpo` giữ tải chạy trong lúc
+failover có kiểm soát: [run FO-20261118-165349-5aac44](../results/RPO-FO-20261118-165349-5aac44.md)
+có 204/204 ACK hiện diện trên primary mới, một UNCONFIRMED không hiện
+diện và 1,333 giây từ yêu cầu dừng đến ACK đầu tiên trên node mới.
+
 ## Đo lặp và phục hồi bổ sung ngày 18/11/2026
 
 Trên `lab13-repeat`, sáu lượt đo lag ở ba mức nghỉ đã được lưu cùng
@@ -124,9 +129,9 @@ Không dùng volume dữ liệu nguồn làm đích khôi phục.
 ## Công việc còn lại
 
 1. Rà soát README và cập nhật sơ đồ theo kiến trúc, kết quả thực tế.
-2. Đo RPO tại biên sự cố với tải đang chạy; đánh giá nhiều lần failover,
-   thời gian phát hiện lỗi và chuyển endpoint ứng dụng nếu muốn đưa ra
-   mục tiêu RPO/RTO rộng hơn phép thử có kiểm soát.
+2. Đánh giá nhiều lần failover, lỗi đột ngột, thời gian phát hiện lỗi và
+   chuyển endpoint ứng dụng nếu muốn đưa ra mục tiêu RPO/RTO rộng hơn
+   phép thử có kiểm soát.
 3. Hoàn thiện chính sách retention, bản sao ngoài máy và bảo mật. Phân biệt rõ đề xuất với cơ chế đã triển khai, kiểm thử.
 4. Hoàn thiện báo cáo, slide và video/demo.
 

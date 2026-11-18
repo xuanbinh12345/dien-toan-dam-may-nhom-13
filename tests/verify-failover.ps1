@@ -1,13 +1,17 @@
 param(
     [ValidatePattern('^FO-\d{8}-\d{6}-[a-f0-9]{6}$')]
-    [string]$RunId = "FO-20261117-151645-24e67c"
+    [string]$RunId = "FO-20261117-151645-24e67c",
+    [ValidateNotNullOrEmpty()]
+    [string]$OldPrimary = "lab13-isolated-primary-1",
+    [ValidateNotNullOrEmpty()]
+    [string]$NewPrimary = "lab13-isolated-replica-1"
 )
 
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path $PSScriptRoot -Parent)
 
-$newPrimary = "lab13-isolated-replica-1"
-$oldPrimary = "lab13-isolated-primary-1"
+$newPrimary = $NewPrimary
+$oldPrimary = $OldPrimary
 $csvPath = ".\results\failover-$RunId.csv"
 
 $transactions = @(Import-Csv -LiteralPath $csvPath)
