@@ -131,7 +131,7 @@ quy trình hoặc xác lập RPO/RTO cho các dạng sự cố khác.
 - [TV3](evidence/tv3/README.md): schema, tải, đo lag và đối chiếu giao dịch.
 - [Ảnh 18–19](evidence/tv3/): thống kê và biểu đồ độ trễ replication.
 - [Ảnh 20–21](evidence/tv1/): dựng cụm mới và tạo replica sau failover.
-- [Ảnh 22–24, 26–28](evidence/integrated/): thử nghiệm replication kết hợp PITR.
+- [Ảnh 22–28](evidence/integrated/): thử nghiệm replication kết hợp PITR; ảnh 25 chụp khi kiểm tra lại sau lần thử.
 
 Sáu ảnh cũ nằm trực tiếp trong `evidence/` (`01`–`05` và `08`)
 thuộc thử nghiệm trước với cụm khác đã được bỏ. Ảnh minh chứng
