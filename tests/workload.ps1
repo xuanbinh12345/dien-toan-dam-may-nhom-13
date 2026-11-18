@@ -1,5 +1,12 @@
 param(
-    [int]$DurationSeconds = 600
+    [ValidateRange(1, 86400)]
+    [int]$DurationSeconds = 600,
+    [ValidateNotNullOrEmpty()]
+    [string]$PrimaryContainer = "lab13-isolated-primary-1",
+    [ValidateNotNullOrEmpty()]
+    [string]$ReplicaContainer = "lab13-isolated-replica-1",
+    [ValidateRange(0, 60000)]
+    [int]$IntervalMilliseconds = 1000
 )
 
 $ErrorActionPreference = "Stop"
@@ -14,7 +21,8 @@ $sequence = 0
 
 Write-Host "RUN: $runId"
 Write-Host "CSV: $csvPath"
-Write-Host "Write: primary | Read: replica"
+Write-Host "Write: $PrimaryContainer | Read: $ReplicaContainer"
+Write-Host "Interval: $IntervalMilliseconds ms"
 
 while ($timer.Elapsed.TotalSeconds -lt $DurationSeconds) {
     $sequence++
@@ -24,7 +32,7 @@ while ($timer.Elapsed.TotalSeconds -lt $DurationSeconds) {
 
     $writeSql = "INSERT INTO public.orders(order_id, amount) VALUES ('$orderId', 100.00);"
 
-    $writeOutput = & docker exec lab13-isolated-primary-1 `
+    $writeOutput = & docker exec $PrimaryContainer `
         psql -X -q -U postgres -d ha_lab `
         -v ON_ERROR_STOP=1 -c $writeSql 2>&1
 
@@ -44,7 +52,7 @@ while ($timer.Elapsed.TotalSeconds -lt $DurationSeconds) {
 
     $readSql = "SELECT count(*) FROM public.orders WHERE order_id='$orderId';"
 
-    $readOutput = & docker exec lab13-isolated-replica-1 `
+    $readOutput = & docker exec $ReplicaContainer `
         psql -X -A -t -U postgres -d ha_lab `
         -v ON_ERROR_STOP=1 -c $readSql 2>&1
 
@@ -82,7 +90,7 @@ while ($timer.Elapsed.TotalSeconds -lt $DurationSeconds) {
         $orderId, $writeStatus, $readStatus, $replicaRows
     )
 
-    Start-Sleep -Milliseconds 1000
+    Start-Sleep -Milliseconds $IntervalMilliseconds
 }
 
 Write-Host "DONE. CSV: $csvPath"
