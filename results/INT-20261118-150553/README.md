@@ -59,12 +59,15 @@ trên Docker Desktop và PostgreSQL 16.15.
 - [22 — cụm replication và WAL archive](../evidence/integrated/22_cum_tich_hop_replication_va_wal_archive.png).
 - [23 — base backup](../evidence/integrated/23_base_backup_cum_tich_hop.png).
 - [24 — lệnh xóa đã lan sang replica](../evidence/integrated/24_xoa_don_da_lan_sang_replica.png).
+- [25 — kiểm tra lại WAL archive sau lần thử](../evidence/integrated/25_wal_archive_sau_khi_xoa_tren_cum_tich_hop.png).
 - [26 — PITR dừng trước lệnh xóa](../evidence/integrated/26_pitr_cum_tich_hop_dung_truoc_lenh_xoa.png).
 - [27 — đối chiếu checksum](../evidence/integrated/27_doi_chieu_checksum_pitr_cum_tich_hop.png).
 - [28 — đọc/ghi sau PITR](../evidence/integrated/28_doc_ghi_sau_pitr_cum_tich_hop.png).
 
-Ảnh 25 về trạng thái WAL archive chưa được lưu; số liệu
-`archived_count = 13` và `failed_count = 0` đã được quan sát trong lần chạy.
+Ảnh 25 được chụp khi kiểm tra lại sau lần thử: `archived_count = 14`,
+`last_archived_wal = ...000C`, `failed_count = 0`. Trong lần chạy ban đầu,
+đã quan sát `archived_count = 13`, `last_archived_wal = ...000B` và
+`failed_count = 0`; không coi ảnh kiểm tra lại là ảnh chụp bộ đếm ban đầu.
 
 ## Giới hạn
 

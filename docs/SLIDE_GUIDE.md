@@ -240,7 +240,7 @@ Tài liệu này là kịch bản cho **30 slide nội dung**. Trang bìa, giớ
 
 - Đếm đủ **30 slide nội dung**, không tính các trang phụ.
 - Mỗi ảnh dùng đúng run và đúng môi trường; các ảnh `01`–`05` và `08` cũ ở gốc `results/evidence/` đã bỏ.
-- Ảnh số **25** của lần thử tích hợp chưa được lưu; không tạo slide hoặc chú thích như thể đã có ảnh này. Số liệu WAL archive được ghi trong [kết quả lần thử](../results/INT-20261118-150553/README.md).
+- [Ảnh 25 — WAL archive](../results/evidence/integrated/25_wal_archive_sau_khi_xoa_tren_cum_tich_hop.png) được chụp khi kiểm tra lại sau lần thử. Khi dùng ảnh, ghi rõ thời điểm kiểm tra lại và không gán bộ đếm 14 cho thời điểm chạy ban đầu; xem [kết quả lần thử](../results/INT-20261118-150553/README.md).
 - Kết luận “510/510 ACK còn hiện diện” chỉ áp dụng cho run failover; giao dịch `UNCONFIRMED` tách riêng.
 - `2,316 giây` là thời gian quan sát từ yêu cầu dừng đến ACK đầu tiên; `1,935 giây` là từ khởi động restore riêng đến quan sát paused. Không gọi hai số này là RTO toàn bộ dịch vụ.
 - Đặt nguồn CSV/ảnh dưới mỗi slide có số liệu. Kiểm tra chữ trong ảnh trên màn hình trình chiếu, không chỉ ở chế độ chỉnh sửa.
