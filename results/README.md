@@ -1,5 +1,12 @@
 # Kết quả thực nghiệm – Nhóm 13
 
+## Phục hồi từ bản sao trên ổ D
+
+[Lần thử ngày 19/11/2026](HOST-COPY-PITR-20261119.md): base backup
+được verify sau sao chép, bốn WAL segment được kiểm tra hash khớp, PITR
+khôi phục 4 dòng với checksum khớp và đọc/ghi thành công. Bản sao nằm
+ngoài Docker volume nhưng vẫn trên cùng host.
+
 ## Failover khi có tải — lab13-rpo
 
 [Run FO-20261118-165349-5aac44](RPO-FO-20261118-165349-5aac44.md):

@@ -33,6 +33,7 @@ Kết quả lần thử kết hợp replication và PITR được ghi tại
 | Đọc/ghi sau PITR | Kết thúc recovery, ghi đơn hàng mới thành công và đọc lại được |
 | Tái lập dự phòng sau failover | Trên lab13-bootstrap-check: dừng primary cũ, promote replica, tạo replica mới từ volume rỗng; primary mới thấy streaming/async và replica mới đọc được đơn REJOIN-20261118-001 trị giá 456.78 |
 | Đo phục hồi database có kiểm soát | Trên lab13-repeat: từ yêu cầu dừng đến ghi và đọc lại thành công trên primary mới 1,078 giây, dưới mục tiêu thử nghiệm 30 giây; 1132/1132 ID ACK có mặt |
+| Sao chép và PITR từ ổ D | Bản sao ngoài Docker volume được verify; 4 dòng và checksum khớp, ghi/đọc sau phục hồi thành công; ổ D vẫn ở cùng host |
 
 ## Kết quả failover
 
