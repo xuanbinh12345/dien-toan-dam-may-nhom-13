@@ -129,7 +129,7 @@ Không dùng volume dữ liệu nguồn làm đích khôi phục.
 
 ## Công việc còn lại
 
-1. Rà soát README và cập nhật sơ đồ theo kiến trúc, kết quả thực tế.
+1. Rà soát [sơ đồ kiến trúc](ARCHITECTURE.md) khi cấu hình hoặc môi trường thay đổi.
 2. Đánh giá nhiều lần failover, lỗi đột ngột, thời gian phát hiện lỗi và
    chuyển endpoint ứng dụng nếu muốn đưa ra mục tiêu RPO/RTO rộng hơn
    phép thử có kiểm soát.
