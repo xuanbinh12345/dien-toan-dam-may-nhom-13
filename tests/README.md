@@ -63,7 +63,11 @@ Script xuất `comparison-details-*`, `comparison-summary-*` và `db-orders-*`. 
 - [x] 510/510 ACK còn trong dữ liệu; 1 UNCONFIRMED không hiện diện.
 - [x] Tổng hợp lag trong khoảng có tải, biểu đồ và điều kiện đo.
 - [x] Đo lag nhiều lần, ba mức khoảng nghỉ, trên cụm riêng; xem [bảng sáu lượt](../results/repeat-lag-20261118/README.md).
-- [ ] Thống nhất mục tiêu RPO/RTO trước phép thử phục hồi tiếp theo.
+- [x] Ghi mục tiêu thử nghiệm trước lần failover có kiểm soát trên
+  `lab13-repeat`; xem [kế hoạch](../docs/RECOVERY_MEASUREMENT_PLAN.md).
+- [x] Kiểm tra ACK khi tải chạy qua failover trên `lab13-rpo`; xem
+  [kết quả và giới hạn](../results/RPO-FO-20261118-165349-5aac44.md).
+- [ ] Xác định mục tiêu cho các lần thử bổ sung trước khi thực hiện.
 - [x] Kiểm tra count/checksum và đọc/ghi sau PITR.
 - [ ] Đo đầy đủ thời gian phục hồi dịch vụ qua nhiều lần thử.
 
