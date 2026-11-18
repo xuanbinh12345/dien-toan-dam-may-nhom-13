@@ -1,0 +1,82 @@
+name: lab13-restore
+
+services:
+  prepare:
+    image: ${PITR_IMAGE:?Set PITR_IMAGE}
+    pull_policy: never
+    profiles: ["tools"]
+    user: root
+
+    environment:
+      BACKUP_PATH: ${BACKUP_PATH:?Set BACKUP_PATH}
+
+    entrypoint:
+      - bash
+      - -ec
+      - |
+        if [ -n "$$(ls -A /restore_data)" ]; then
+          echo "Restore volume is not empty. Stop and inspect."
+          exit 1
+        fi
+
+        test -s "$$BACKUP_PATH/PG_VERSION"
+        pg_verifybackup "$$BACKUP_PATH"
+
+        cp -a "$$BACKUP_PATH/." /restore_data/
+        touch /restore_data/recovery.signal
+        chown -R postgres:postgres /restore_data
+        chmod 700 /restore_data
+
+        echo "PREPARE_OK"
+
+    volumes:
+      - base_backups:/backups:ro
+      - restore_data:/restore_data
+
+  restore:
+    image: ${PITR_IMAGE:?Set PITR_IMAGE}
+    pull_policy: never
+
+    entrypoint:
+      - bash
+      - -ec
+      - |
+        if [ ! -s "$$PGDATA/PG_VERSION" ]; then
+          echo "Restore data is missing. Run prepare first."
+          exit 1
+        fi
+        exec docker-entrypoint.sh "$$@"
+      - restore-start
+
+    command:
+      - postgres
+      - -c
+      - archive_mode=off
+      - -c
+      - hot_standby=on
+      - -c
+      - restore_command=cp /wal_archive/%f %p
+      - -c
+      - recovery_target_time=${RECOVERY_TARGET_TIME:?Set RECOVERY_TARGET_TIME}
+      - -c
+      - recovery_target_action=pause
+      - -c
+      - recovery_target_timeline=current
+
+    ports:
+      - "127.0.0.1:5546:5432"
+
+    volumes:
+      - restore_data:/var/lib/postgresql/data
+      - wal_archive:/wal_archive:ro
+
+volumes:
+  restore_data:
+
+  base_backups:
+    external: true
+    name: lab13-backup_base_backups
+
+  wal_archive:
+    external: true
+    name: lab13-backup_wal_archive

@@ -1,0 +1,2 @@
+﻿"run_id","container","order_id","amount","write_status","write_ack_utc","read_status","read_checked_utc","rows_read"
+"PITR-20261117-194600","lab13-restore-restore-1","POST-PITR-20261117-201509116","999.99","ACK","2026-11-17T20:15:09.3429510Z","OK","2026-11-17T20:15:09.4957069Z","1"
