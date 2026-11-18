@@ -1,0 +1,13 @@
+services:
+  restore:
+    ports: !override
+      - "127.0.0.1:5565:5432"
+
+volumes:
+  base_backups:
+    external: true
+    name: lab13-integrated_base_backups
+
+  wal_archive:
+    external: true
+    name: lab13-integrated_wal_archive

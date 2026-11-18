@@ -9,8 +9,9 @@ Cập nhật ngày 18/11/2026.
 - TV3: script tải, đo lag, đối chiếu giao dịch và kết quả — PR #6.
 - TV2: backup, lưu WAL, PITR và minh chứng — PR #5.
 
-Máy triển khai đã đồng bộ main tại commit 165543e.
-Các cập nhật hoàn thiện tiếp theo thực hiện trên nhánh codex/hoan-thien-du-an.
+Các phần hạ tầng, tải/đo, backup/PITR và kiểm chứng bổ sung đã được tích hợp vào main.
+Kết quả lần thử kết hợp replication và PITR được ghi tại
+[INT-20261118-150553](../results/INT-20261118-150553/README.md).
 
 ## Công việc đã thực hiện
 
@@ -26,6 +27,7 @@ Các cập nhật hoàn thiện tiếp theo thực hiện trên nhánh codex/hoa
 | Base backup | Tạo bản sao vật lý, kiểm tra pg_verifybackup thành công |
 | WAL archive | Đã kiểm tra WAL được lưu vào thư mục archive |
 | PITR | Khôi phục về thời điểm trước khi xóa 3 đơn hàng trong môi trường backup riêng |
+| HA kết hợp PITR | Trên lab13-integrated, xóa 3 đơn đã lan sang replica; phục hồi từ base backup và WAL về trước lệnh xóa; 4/4 dòng và checksum khớp, sau đó đọc/ghi thành công |
 | Kiểm tra PITR | Số dòng trước và sau khôi phục đều là 4; checksum khớp |
 | Đọc/ghi sau PITR | Kết thúc recovery, ghi đơn hàng mới thành công và đọc lại được |
 | Tái lập dự phòng sau failover | Trên lab13-bootstrap-check: dừng primary cũ, promote replica, tạo replica mới từ volume rỗng; primary mới thấy streaming/async và replica mới đọc được đơn REJOIN-20261118-001 trị giá 456.78 |
@@ -65,6 +67,20 @@ chưa bao gồm chuẩn bị, sao chép backup và kiểm tra phục hồi dịc
 Chi tiết: [kết quả PITR](../results/PITR-20261117-194600/README.md).
 Quy trình: [runbook backup/PITR](../backup/RUNBOOK.md).
 
+## Kết quả thử nghiệm kết hợp
+
+Run ID: `INT-20261118-150553`.
+Primary và replica đều còn 0 đơn thử nghiệm sau khi xóa.
+PITR từ backup và WAL của cùng cụm dừng tại
+`2026-11-18 08:08:44.585216+00`, trước commit xóa.
+Bản phục hồi có 4 dòng; checksum trước/sau cùng là
+`d86a2624608b97232e95955f5c8246fb`.
+Sau khi kết thúc recovery, đơn mới trị giá 999.99 được ghi
+và đọc lại thành công.
+
+[CSV và diễn giải](../results/INT-20261118-150553/README.md) ·
+[Runbook](INTEGRATED_PITR.md).
+
 ## Trạng thái môi trường ở cuối các lần thử
 
 - lab13-isolated-primary-1: đã dừng.
@@ -72,6 +88,9 @@ Quy trình: [runbook backup/PITR](../backup/RUNBOOK.md).
 - Chưa có replica thay thế cho primary mới.
 - lab13-backup-source-1: nguồn của bài thử backup/PITR riêng.
 - lab13-restore-restore-1: đã kết thúc recovery và kiểm tra đọc/ghi.
+- lab13-bootstrap-check: đã promote replica cũ và tạo replica mới từ volume rỗng; primary cũ vẫn dừng.
+- lab13-integrated: primary và replica nguồn đều đã áp dụng lệnh xóa; WAL được archive.
+- lab13-integrated-restore-restore-1: đã kết thúc recovery và kiểm tra đọc/ghi sau PITR.
 
 Đây là trạng thái ghi nhận trong các lần thử, không phải kiểm tra trạng thái trực tiếp hiện tại.
 
@@ -90,14 +109,9 @@ Không dùng volume dữ liệu nguồn làm đích khôi phục.
 
 1. Đo thêm nhiều lần và ở các mức tải khác nhau để đánh giá độ biến động của replication lag; xác định mục tiêu trước khi chạy.
 2. Rà soát README và cập nhật sơ đồ theo kiến trúc, kết quả thực tế.
-3. Bổ sung thử nghiệm xóa dữ liệu được sao chép sang replica
-   rồi phục hồi bằng backup/PITR của cùng hệ thống HA.
-   Bài PITR hiện tại được thực hiện trên môi trường riêng.
-4. Xác định mục tiêu RPO/RTO trước các lần đo bổ sung,
-   đo đầy đủ thời gian phục hồi dịch vụ.
-5. Hoàn thiện chính sách retention, bản sao ngoài máy và bảo mật.
-   Phân biệt rõ đề xuất với cơ chế đã triển khai, kiểm thử.
-6. Hoàn thiện báo cáo, slide và video/demo.
+3. Xác định mục tiêu RPO/RTO trước các lần đo bổ sung, đo đầy đủ thời gian phục hồi dịch vụ.
+4. Hoàn thiện chính sách retention, bản sao ngoài máy và bảo mật. Phân biệt rõ đề xuất với cơ chế đã triển khai, kiểm thử.
+5. Hoàn thiện báo cáo, slide và video/demo.
 
 ## Giới hạn hiện tại
 

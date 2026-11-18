@@ -1,0 +1,2 @@
+backup_path=/backups/base_integrated_20261118_150553
+recovery_target_utc=2026-11-18 08:08:44.585216+00
