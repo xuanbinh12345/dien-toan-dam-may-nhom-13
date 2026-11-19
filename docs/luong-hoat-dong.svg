@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1060" viewBox="0 0 1500 1060" role="img" aria-labelledby="title desc">
+  <title id="title">Luồng hoạt động PostgreSQL HA và PITR</title>
+  <desc id="desc">Luồng ghi và replication, failover thủ công khi primary dừng, và phục hồi từ backup cùng WAL khi xóa nhầm.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/></marker>
+    <style>
+      text {font-family: 'Segoe UI', Arial, sans-serif; fill:#172b4d} .title{font-size:34px;font-weight:700} .sub{font-size:18px;fill:#475569} .section{font-size:24px;font-weight:700} .box{fill:#fff;stroke:#94a3b8;stroke-width:2} .blue{fill:#eaf3ff;stroke:#4385d1} .green{fill:#e9f8f0;stroke:#278d5b} .orange{fill:#fff5e6;stroke:#d98b21} .red{fill:#fff0ef;stroke:#d05b52} .label{font-size:19px;font-weight:600} .small{font-size:16px;fill:#334155} .arrow{fill:none;stroke:#475569;stroke-width:2.5;marker-end:url(#arrow)} .tag{font-size:15px;fill:#334155}
+    </style>
+  </defs>
+  <rect width="1500" height="1060" fill="#f7f9fc"/>
+  <text x="55" y="55" class="title">Luồng hoạt động dự án PostgreSQL HA và PITR</text>
+  <text x="55" y="85" class="sub">Sơ đồ khái quát các bài thử đã thực hiện — các cụm thử là những project riêng, cùng Docker host</text>
+
+  <rect x="40" y="115" width="1420" height="250" rx="16" fill="#fff" stroke="#dce4ef"/>
+  <text x="65" y="152" class="section">1. Hoạt động bình thường: ghi và sao chép</text>
+  <rect x="85" y="205" width="230" height="90" rx="12" class="box"/><text x="200" y="242" class="label" text-anchor="middle">Ứng dụng / script</text><text x="200" y="268" class="small" text-anchor="middle">gửi và kiểm tra đơn hàng</text>
+  <rect x="500" y="205" width="220" height="90" rx="12" class="box blue"/><text x="610" y="242" class="label" text-anchor="middle">Primary</text><text x="610" y="268" class="small" text-anchor="middle">nhận ghi, trả ACK</text>
+  <rect x="955" y="205" width="220" height="90" rx="12" class="box green"/><text x="1065" y="242" class="label" text-anchor="middle">Replica</text><text x="1065" y="268" class="small" text-anchor="middle">nhận và phát lại WAL</text>
+  <path d="M315 248 H500" class="arrow"/><text x="408" y="237" class="tag" text-anchor="middle">Ghi đơn hàng</text>
+  <path d="M720 248 H955" class="arrow"/><text x="836" y="237" class="tag" text-anchor="middle">WAL streaming bất đồng bộ</text>
+  <path d="M1065 295 V331 H200 V297" class="arrow"/><text x="630" y="323" class="tag" text-anchor="middle">Script đọc kiểm tra đơn trên replica</text>
+
+  <rect x="40" y="390" width="1420" height="225" rx="16" fill="#fff" stroke="#dce4ef"/>
+  <text x="65" y="427" class="section">2. Primary dừng: chuyển đổi có người vận hành</text>
+  <rect x="75" y="472" width="220" height="90" rx="12" class="box red"/><text x="185" y="509" class="label" text-anchor="middle">Primary cũ dừng</text><text x="185" y="535" class="small" text-anchor="middle">xác nhận đã dừng</text>
+  <rect x="415" y="472" width="220" height="90" rx="12" class="box orange"/><text x="525" y="509" class="label" text-anchor="middle">Promote replica</text><text x="525" y="535" class="small" text-anchor="middle">trở thành primary mới</text>
+  <rect x="755" y="472" width="220" height="90" rx="12" class="box blue"/><text x="865" y="509" class="label" text-anchor="middle">Chuyển đích ghi</text><text x="865" y="535" class="small" text-anchor="middle">script cập nhật target</text>
+  <rect x="1095" y="472" width="270" height="90" rx="12" class="box green"/><text x="1230" y="509" class="label" text-anchor="middle">Ghi và đối chiếu ACK</text><text x="1230" y="535" class="small" text-anchor="middle">trên primary mới</text>
+  <path d="M295 517 H415" class="arrow"/><path d="M635 517 H755" class="arrow"/><path d="M975 517 H1095" class="arrow"/>
+  <text x="75" y="592" class="small">Failover được kích hoạt thủ công; giữ primary cũ dừng. UNCONFIRMED là giao dịch chưa xác nhận, không tự tính là ACK bị mất.</text>
+
+  <rect x="40" y="640" width="1420" height="315" rx="16" fill="#fff" stroke="#dce4ef"/>
+  <text x="65" y="677" class="section">3. Xóa nhầm: phục hồi về thời điểm trước khi xóa</text>
+  <rect x="75" y="715" width="220" height="85" rx="12" class="box red"/><text x="185" y="750" class="label" text-anchor="middle">Xóa trên primary</text><text x="185" y="775" class="small" text-anchor="middle">xóa cũng lan sang replica</text>
+  <rect x="405" y="715" width="240" height="85" rx="12" class="box orange"/><text x="525" y="750" class="label" text-anchor="middle">Chọn mốc PITR</text><text x="525" y="775" class="small" text-anchor="middle">trước commit xóa</text>
+  <rect x="760" y="715" width="250" height="85" rx="12" class="box blue"/><text x="885" y="750" class="label" text-anchor="middle">Restore riêng</text><text x="885" y="775" class="small" text-anchor="middle">volume dữ liệu mới</text>
+  <rect x="1120" y="715" width="250" height="85" rx="12" class="box green"/><text x="1245" y="750" class="label" text-anchor="middle">Kiểm tra phục hồi</text><text x="1245" y="775" class="small" text-anchor="middle">số dòng, checksum, đọc/ghi</text>
+  <path d="M295 757 H405" class="arrow"/><path d="M645 757 H760" class="arrow"/><path d="M1010 757 H1120" class="arrow"/>
+  <rect x="455" y="842" width="260" height="70" rx="12" class="box"/><text x="585" y="884" class="label" text-anchor="middle">Base backup đã verify</text>
+  <rect x="810" y="842" width="240" height="70" rx="12" class="box"/><text x="930" y="884" class="label" text-anchor="middle">WAL archive</text>
+  <path d="M585 842 V817 H840 V802" class="arrow"/><path d="M930 842 V802" class="arrow"/>
+  <text x="75" y="935" class="small">Backup/WAL có thể được sao chép sang ổ D; bản sao ổ D đã thử vẫn ở cùng host, chưa bảo vệ khi mất máy.</text>
+
+  <text x="55" y="1002" class="sub">Ý chính: replication giúp tiếp tục dịch vụ khi primary dừng; backup + WAL giúp phục hồi trước thao tác xóa nhầm.</text>
+  <text x="55" y="1030" class="sub">Chi tiết từng project, cổng và giới hạn: docs/ARCHITECTURE.md · số liệu: results/README.md</text>
+</svg>
